@@ -35,7 +35,15 @@ class TenantCreateView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         client = SaasApiClient()
-        payload = form.cleaned_data
+        data = form.cleaned_data
+        paid_until = data.get("paid_until")
+        payload = {
+            "schema_name": data.get("schema_name"),
+            "client_name": data.get("client_name"),
+            "on_trial": data.get("on_trial"),
+            "paid_until": paid_until.isoformat() if paid_until else None,
+            "domain": data.get("primary_domain"),
+        }
         try:
             client.create_tenant(payload)
             messages.success(self.request, "Tenant criado com sucesso na API.")
@@ -63,10 +71,10 @@ class TenantUpdateView(LoginRequiredMixin, FormView):
             return initial
         initial.update(
             {
-                "schema_name": tenant.get("schema_name", ""),
-                "client_name": tenant.get("client_name", ""),
-                "primary_domain": tenant.get("primary_domain", ""),
-                "on_trial": tenant.get("on_trial", False),
+                "schema_name": tenant.get("schema_name") or "",
+                "client_name": tenant.get("client_name") or "",
+                "primary_domain": tenant.get("primary_domain") or "",
+                "on_trial": tenant.get("on_trial") if tenant.get("on_trial") is not None else False,
                 "paid_until": tenant.get("paid_until") or None,
             }
         )
@@ -75,7 +83,14 @@ class TenantUpdateView(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         client = SaasApiClient()
         schema_name = self.kwargs.get("schema_name")
-        payload = form.cleaned_data
+        data = form.cleaned_data
+        paid_until = data.get("paid_until")
+        payload = {
+            "client_name": data.get("client_name"),
+            "on_trial": data.get("on_trial"),
+            "paid_until": paid_until.isoformat() if paid_until else None,
+            "domain": data.get("primary_domain"),
+        }
         try:
             client.update_tenant(schema_name, payload)
             messages.success(self.request, "Tenant atualizado com sucesso na API.")

@@ -37,6 +37,10 @@ LOGO_URL = env('LOGO_URL', default=None)
 API_AUTH_TOKEN = env('API_AUTH_TOKEN', default='default-api-key-from-settings')
 NOTIFICATION_WEBHOOK_TOKEN = env('NOTIFICATION_WEBHOOK_TOKEN', default='default-webhook-token-from-settings')
 
+# Configurações da API do SaaS multi-tenant
+SAAS_API_BASE_URL = env('SAAS_API_BASE_URL', default=None)
+SAAS_API_KEY = env('SAAS_API_KEY', default=None)
+
 # --- Configurações Comuns do Django (copiadas do seu settings.py) ---
 INSTALLED_APPS = [
     'django.contrib.admin',
