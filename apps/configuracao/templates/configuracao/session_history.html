@@ -1,0 +1,316 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% load gestor_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .user-agent-cell {
+        display: flex;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+        cursor: help;
+    }
+    .user-agent-cell .badge {
+        font-size: 0.75rem;
+        font-weight: 500;
+        padding: 0.35rem 0.5rem;
+        white-space: nowrap;
+    }
+    .user-agent-cell .badge i {
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                        <h4 class="mb-sm-0">{{ title }}</h4>
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="javascript: void(0);">Gestor</a></li>
+                                <li class="breadcrumb-item active">{{ title }}</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <i class="ri-filter-3-line me-2 fs-18 text-primary"></i>
+                            <h4 class="card-title mb-0">Filtros</h4>
+                        </div>
+                        <div class="card-body">
+                            <form method="GET" class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="id_is_active" class="form-label fw-semibold">
+                                        <i class="ri-toggle-line align-bottom me-1"></i>Status
+                                    </label>
+                                    <select name="is_active" id="id_is_active" class="form-select">
+                                        <option value="">Todas</option>
+                                        <option value="true" {% if current_is_active == 'true' %}selected{% endif %}>Ativas</option>
+                                        <option value="false" {% if current_is_active == 'false' %}selected{% endif %}>Inativas</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_user_search" class="form-label fw-semibold">
+                                        <i class="ri-user-search-line align-bottom me-1"></i>Usuário
+                                    </label>
+                                    <input type="text" name="user_search" id="id_user_search" class="form-control" 
+                                           placeholder="Nome, username ou email..." 
+                                           value="{{ current_user_search }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_group" class="form-label fw-semibold">
+                                        <i class="ri-shield-user-line align-bottom me-1"></i>Perfil
+                                    </label>
+                                    <select name="group" id="id_group" class="form-select">
+                                        <option value="">Todos</option>
+                                        {% for group_obj in groups %}
+                                        <option value="{{ group_obj.pk }}" {% if current_group == group_obj.pk|stringformat:"s" %}selected{% endif %}>{{ group_obj.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_start_date" class="form-label fw-semibold">
+                                        <i class="ri-calendar-line align-bottom me-1"></i>Data Início
+                                    </label>
+                                    <input type="date" name="start_date" id="id_start_date" class="form-control" value="{{ current_start_date }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_end_date" class="form-label fw-semibold">
+                                        <i class="ri-calendar-check-line align-bottom me-1"></i>Data Fim
+                                    </label>
+                                    <input type="date" name="end_date" id="id_end_date" class="form-control" value="{{ current_end_date }}">
+                                </div>
+                                <div class="col-md-9 d-flex align-items-end gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="ri-search-line align-bottom me-1"></i>Filtrar
+                                    </button>
+                                    <a href="{% url 'configuracao:session_history' %}" class="btn btn-soft-secondary">
+                                        <i class="ri-refresh-line align-bottom me-1"></i>Limpar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title mb-0">Histórico de Sessões</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-nowrap align-middle mb-0">
+                                    <thead>
+                                <tr>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Usuário</th>
+                                    <th scope="col">Perfis</th>
+                                    <th scope="col">IP</th>
+                                    <th scope="col">User Agent</th>
+                                    <th scope="col">Login</th>
+                                    <th scope="col">Logout</th>
+                                    <th scope="col">Duração</th>
+                                    <th scope="col">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in sessions %}
+                                <tr>
+                                    <td>
+                                        {% if session.is_active %}
+                                            <span class="badge bg-success">Ativa</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inativa</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ session.user.get_full_name|default:session.user.username }}</td>
+                                    <td>
+                                        {% for group in session.user.groups.all %}
+                                            <span class="badge bg-info">{{ group.name }}</span>
+                                        {% empty %}
+                                            <span class="badge bg-secondary">Nenhum</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ session.ip_address|default:"N/A" }}</td>
+                                    <td>
+                                        {% if session.user_agent %}
+                                            <div class="user-agent-cell" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ session.user_agent }}">
+                                                <span class="badge bg-soft-primary text-primary">
+                                                    {% if "Chrome" in session.user_agent %}
+                                                        <i class="ri-chrome-line"></i> Chrome
+                                                    {% elif "Firefox" in session.user_agent %}
+                                                        <i class="ri-firefox-line"></i> Firefox
+                                                    {% elif "Safari" in session.user_agent and "Chrome" not in session.user_agent %}
+                                                        <i class="ri-safari-line"></i> Safari
+                                                    {% elif "Edge" in session.user_agent %}
+                                                        <i class="ri-edge-line"></i> Edge
+                                                    {% elif "Opera" in session.user_agent or "OPR" in session.user_agent %}
+                                                        <i class="ri-opera-line"></i> Opera
+                                                    {% else %}
+                                                        <i class="ri-global-line"></i> Outro
+                                                    {% endif %}
+                                                </span>
+                                                <span class="badge bg-soft-secondary text-secondary">
+                                                    {% if "Windows" in session.user_agent %}
+                                                        <i class="ri-windows-line"></i> Windows
+                                                    {% elif "Mac OS" in session.user_agent or "Macintosh" in session.user_agent %}
+                                                        <i class="ri-mac-line"></i> macOS
+                                                    {% elif "Linux" in session.user_agent %}
+                                                        <i class="ri-ubuntu-line"></i> Linux
+                                                    {% elif "Android" in session.user_agent %}
+                                                        <i class="ri-android-line"></i> Android
+                                                    {% elif "iOS" in session.user_agent or "iPhone" in session.user_agent or "iPad" in session.user_agent %}
+                                                        <i class="ri-apple-line"></i> iOS
+                                                    {% else %}
+                                                        <i class="ri-computer-line"></i> Outro
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ session.login_time|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        {% if session.logout_time %}
+                                            {{ session.logout_time|date:"d/m/Y H:i" }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ session.session_duration|format_duration }}</td>
+                                    <td>
+                                        {% if session.is_active %}
+                                            <form action="{% url 'configuracao:end_user_session' pk=session.pk %}" method="post" onsubmit="return confirm('Tem certeza que deseja encerrar esta sessão?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-danger">Encerrar</button>
+                                            </form>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="7" class="text-center">Nenhum registro de sessão encontrado.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            {% if is_paginated %}
+                            <div class="d-flex justify-content-center mt-4">
+                                <nav aria-label="Navegação de páginas">
+                                    <ul class="pagination pagination-separated">
+                                        {% if page_obj.has_previous %}
+                                            <li class="page-item">
+                                                <a href="?page={{ page_obj.previous_page_number }}{% if current_is_active %}&is_active={{ current_is_active }}{% endif %}{% if current_user_search %}&user_search={{ current_user_search }}{% endif %}{% if current_group %}&group={{ current_group }}{% endif %}{% if current_start_date %}&start_date={{ current_start_date }}{% endif %}{% if current_end_date %}&end_date={{ current_end_date }}{% endif %}" class="page-link">
+                                                    <i class="ri-arrow-left-s-line"></i> Anterior
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">
+                                                    <i class="ri-arrow-left-s-line"></i> Anterior
+                                                </span>
+                                            </li>
+                                        {% endif %}
+
+                                        {% for i in page_obj.paginator.page_range %}
+                                            {% if page_obj.number == i %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ i }}</span>
+                                                </li>
+                                            {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                                                <li class="page-item">
+                                                    <a href="?page={{ i }}{% if current_is_active %}&is_active={{ current_is_active }}{% endif %}{% if current_user_search %}&user_search={{ current_user_search }}{% endif %}{% if current_group %}&group={{ current_group }}{% endif %}{% if current_start_date %}&start_date={{ current_start_date }}{% endif %}{% if current_end_date %}&end_date={{ current_end_date }}{% endif %}" class="page-link">{{ i }}</a>
+                                                </li>
+                                            {% elif i == page_obj.paginator.page_range|first and page_obj.number > 4 %}
+                                                <li class="page-item">
+                                                    <a href="?page=1{% if current_is_active %}&is_active={{ current_is_active }}{% endif %}{% if current_user_search %}&user_search={{ current_user_search }}{% endif %}{% if current_group %}&group={{ current_group }}{% endif %}{% if current_start_date %}&start_date={{ current_start_date }}{% endif %}{% if current_end_date %}&end_date={{ current_end_date }}{% endif %}" class="page-link">1</a>
+                                                </li>
+                                                {% if page_obj.number > 5 %}
+                                                    <li class="page-item disabled">
+                                                        <span class="page-link">...</span>
+                                                    </li>
+                                                {% endif %}
+                                            {% elif i == page_obj.paginator.page_range|last and page_obj.number < page_obj.paginator.num_pages|add:'-3' %}
+                                                {% if page_obj.number < page_obj.paginator.num_pages|add:'-4' %}
+                                                    <li class="page-item disabled">
+                                                        <span class="page-link">...</span>
+                                                    </li>
+                                                {% endif %}
+                                                <li class="page-item">
+                                                    <a href="?page={{ page_obj.paginator.num_pages }}{% if current_is_active %}&is_active={{ current_is_active }}{% endif %}{% if current_user_search %}&user_search={{ current_user_search }}{% endif %}{% if current_group %}&group={{ current_group }}{% endif %}{% if current_start_date %}&start_date={{ current_start_date }}{% endif %}{% if current_end_date %}&end_date={{ current_end_date }}{% endif %}" class="page-link">{{ page_obj.paginator.num_pages }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        {% if page_obj.has_next %}
+                                            <li class="page-item">
+                                                <a href="?page={{ page_obj.next_page_number }}{% if current_is_active %}&is_active={{ current_is_active }}{% endif %}{% if current_user_search %}&user_search={{ current_user_search }}{% endif %}{% if current_group %}&group={{ current_group }}{% endif %}{% if current_start_date %}&start_date={{ current_start_date }}{% endif %}{% if current_end_date %}&end_date={{ current_end_date }}{% endif %}" class="page-link">
+                                                    Próxima <i class="ri-arrow-right-s-line"></i>
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">
+                                                    Próxima <i class="ri-arrow-right-s-line"></i>
+                                                </span>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            </div>
+
+                            <!-- Informações da paginação -->
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="text-center text-muted">
+                                        <small>
+                                            Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ paginator.count }} registros
+                                            {% if page_obj.paginator.num_pages > 1 %}
+                                                (Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }})
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Inicializa os tooltips do Bootstrap
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

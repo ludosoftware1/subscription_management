@@ -1,0 +1,20 @@
+<!-- Modal Genérico de Confirmar Pagamento de Taxa -->
+<div class="modal fade" id="confirmarPagamentoModal_{{ taxa.pk }}" tabindex="-1" aria-labelledby="confirmarPagamentoModalLabel_{{ taxa.pk }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title" id="confirmarPagamentoModalLabel_{{ taxa.pk }}">Confirmar Pagamento de Taxa</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-4"><i class="ri-checkbox-circle-line text-success display-4"></i></div>
+                <h4>Confirmar Pagamento?</h4>
+                <p class="text-muted">Você confirma o recebimento do pagamento para a taxa <strong>"{{ taxa.nome_taxa }}"</strong> no valor de <strong>R$ {{ taxa.valor|floatformat:2 }}</strong>?</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-light w-sm" data-bs-dismiss="modal">Cancelar</button>
+                <form action="{% url 'gestor:confirmar_pagamento_taxa' pk=taxa.pk %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success w-sm">Sim, Confirmar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,210 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}Trilha de Auditoria{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-timeline .accordion-item {
+        position: relative; /* Mantém a posição para o pseudo-elemento */
+        border-left: 2px solid var(--vz-border-color); /* Linha da timeline */
+    }
+    .history-timeline .accordion-button::before {
+        content: "";
+        position: absolute;
+        left: -8px; /* Posiciona o círculo sobre a linha */
+        top: 18px; /* Alinhamento vertical com o texto */
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background-color: var(--vz-secondary-bg);
+        border: 2px solid var(--vz-primary);
+    }
+    .history-timeline .accordion-button:not(.collapsed)::before {
+        background-color: var(--vz-primary);
+    }
+    .history-timeline .accordion-button {
+        background-color: transparent;
+        box-shadow: none;
+    }
+    .diff-table {
+        width: 100%; /* Garante que a tabela ocupe o espaço */
+    }
+    .diff-table td, .diff-table th {
+        padding: 5px;
+        vertical-align: top;
+    }
+    .diff_sub { background-color: #ffe9e9; text-decoration: line-through; }
+    .diff_add { background-color: #e9ffe9; }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+
+            {% block pagetitle %}
+                {% include "partials/page-title.html" with pagetitle="Administração" title="Trilha de Auditoria" %}
+            {% endblock pagetitle %}
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <h4 class="card-title mb-0 flex-grow-1">Registros de Atividade</h4>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card card-body mb-4" style="background-color: var(--vz-light);">
+                        <form method="get" class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label for="{{ filter_form.start_date.id_for_label }}" class="form-label">{{ filter_form.start_date.label }}</label>
+                                {{ filter_form.start_date }}
+                            </div>
+                            <div class="col-md-3">
+                                <label for="{{ filter_form.end_date.id_for_label }}" class="form-label">{{ filter_form.end_date.label }}</label>
+                                {{ filter_form.end_date }}
+                            </div>
+                            <div class="col-md-2">
+                                <label for="{{ filter_form.user.id_for_label }}" class="form-label">{{ filter_form.user.label }}</label>
+                                {{ filter_form.user }}
+                            </div>
+                            <div class="col-md-2">
+                                <label for="{{ filter_form.action.id_for_label }}" class="form-label">{{ filter_form.action.label }}</label>
+                                {{ filter_form.action }}
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                                <a href="{% url 'pages:audit_trail' %}" class="btn btn-light w-100 mt-2">Limpar</a>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="accordion accordion-flush history-timeline" id="auditTrailAccordion">
+                        {% for log_entry in log_entries %}
+                            <div class="accordion-item">
+                                <div class="accordion-header" id="heading-{{ log_entry.pk }}">
+                                    <a class="accordion-button collapsed" data-bs-toggle="collapse" href="#collapse-{{ log_entry.pk }}" aria-expanded="false">
+                                        <div class="d-flex w-100">
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="fs-14 mb-1">
+                                                    {% if log_entry.action == 0 %}
+                                                        <span class="badge bg-success-subtle text-success">CRIADO</span>
+                                                    {% elif log_entry.action == 1 %}
+                                                        <span class="badge bg-warning-subtle text-warning">ATUALIZADO</span>
+                                                    {% elif log_entry.action == 2 %}
+                                                        <span class="badge bg-danger-subtle text-danger">DELETADO</span>
+                                                    {% elif log_entry.action == 3 %}
+                                                        <span class="badge bg-info-subtle text-info">LOGIN</span>
+                                                    {% endif %}
+                                                    {{ log_entry.content_type.name|title }} - {{ log_entry.object_repr }}
+                                                </h6>
+                                                <small class="text-muted">
+                                                    Por: <b>{{ log_entry.actor.username|default:"Sistema" }}</b> em {{ log_entry.timestamp|date:"d/m/Y H:i:s" }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div id="collapse-{{ log_entry.pk }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ log_entry.pk }}" data-bs-parent="#auditTrailAccordion">
+                                    <div class="accordion-body ms-2 ps-5">
+                                        <h6 class="mb-1">Detalhes do Evento:</h6>
+                                        {% if log_entry.action == 1 %} {# UPDATE #}
+                                            <table class="table table-sm table-bordered diff-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Campo</th>
+                                                        <th>Valor Antigo</th>
+                                                        <th>Valor Novo</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for field, values in log_entry.changes_dict.items %}
+                                                    <tr>
+                                                        <td>{{ field|title }}</td>
+                                                        <td class="diff_sub">{{ values.0 }}</td>
+                                                        <td class="diff_add">{{ values.1 }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        {% elif log_entry.action == 0 %} {# CREATE #}
+                                            <p class="text-muted">Registro foi criado com os seguintes dados:</p>
+                                            <table class="table table-sm table-bordered">
+                                                <tbody>
+                                                {% for field, value in log_entry.changes_dict.items %}
+                                                    <tr>
+                                                        <th scope="row" style="width: 30%;">{{ field|title }}</th>
+                                                        <td>{{ value.1|default:"-" }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        {% elif log_entry.action == 2 %} {# DELETE #}
+                                            <p class="text-muted">O registro foi deletado. Dados no momento da exclusão:</p>
+                                            <table class="table table-sm table-bordered">
+                                                <tbody>
+                                                {% for field, value in log_entry.changes_dict.items %}
+                                                    <tr>
+                                                        <th scope="row" style="width: 30%;">{{ field|title }}</th>
+                                                        <td>{{ value.0|default:"-" }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        {% elif log_entry.action == 3 %} {# LOGIN #}
+                                            <p class="text-muted mb-0">O usuário realizou login no sistema a partir do endereço IP: <b>{{ log_entry.remote_addr|default:"Não registrado" }}</b></p>
+                                            </table>
+                                        {% endif %}
+                                        
+                                        {% if log_entry.additional_data.reason %}
+                                            <p class="mt-2 mb-0"><b>Motivo da alteração:</b> {{ log_entry.additional_data.reason }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="text-center py-5">
+                                <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:75px;height:75px"></lord-icon> {# Ícone para "vazio" #}
+                                <h5 class="mt-2">Nenhum Registro de Auditoria Encontrado</h5>
+                                <p class="text-muted">As atividades dos usuários aparecerão aqui assim que forem realizadas.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Paginação -->
+                    {% if log_entries.has_other_pages %}
+                        <div class="d-flex justify-content-end mt-4">
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    {% if log_entries.has_previous %}
+                                        <li class="page-item"><a class="page-link" href="?page=1&{{ request.GET.urlencode | cut:'page=' }}">Primeira</a></li>
+                                        <li class="page-item"><a class="page-link" href="?page={{ log_entries.previous_page_number }}&{{ request.GET.urlencode | cut:'page=' }}">Anterior</a></li>
+                                    {% else %}
+                                        <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+                                    {% endif %}
+
+                                    <li class="page-item active"><span class="page-link">Página {{ log_entries.number }} de {{ log_entries.paginator.num_pages }}</span></li>
+
+                                    {% if log_entries.has_next %}
+                                        <li class="page-item"><a class="page-link" href="?page={{ log_entries.next_page_number }}&{{ request.GET.urlencode | cut:'page=' }}">Próxima</a></li>
+                                        <li class="page-item"><a class="page-link" href="?page={{ log_entries.paginator.num_pages }}&{{ request.GET.urlencode | cut:'page=' }}">Última</a></li>
+                                    {% else %}
+                                        <li class="page-item disabled"><span class="page-link">Próxima</span></li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
+{# O JavaScript customizado para processar o histórico foi removido pois a lógica agora está no template do Django. #}
+{% endblock javascript %}

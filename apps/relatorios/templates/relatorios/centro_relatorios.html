@@ -1,0 +1,1479 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load gestor_tags %}
+
+{% block title %}Centro de Relatórios{% endblock title %}
+
+{% block extra_css %}
+<link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<style>
+/* Layout do Centro de Relatórios - Adaptável para Tema Claro/Escuro Velzon */
+.centro-relatorios {
+    min-height: calc(100vh - 200px);
+}
+
+/* Tema Claro (Padrão) */
+.dashboard-executivo {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    color: #495057;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.dashboard-executivo .card-title {
+    color: #495057 !important;
+}
+
+.navegacao-lateral {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    min-height: 600px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.nav-modulos .nav-link {
+    border-radius: 0.375rem;
+    margin-bottom: 0.25rem;
+    color: #495057;
+    font-weight: 500;
+    background: transparent;
+    border: 1px solid #dee2e6;
+}
+
+.nav-modulos .nav-link:hover {
+    background: #f8f9fa;
+    color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.nav-modulos .nav-link.active {
+    background: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+.area-trabalho {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    min-height: 600px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.painel-filtros {
+    background: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    padding: 1.5rem;
+    max-width: 350px;
+}
+
+.painel-filtros .card {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    color: #495057;
+}
+
+.painel-filtros .card .card-title {
+    color: #495057;
+}
+
+.painel-filtros .form-label {
+    color: #495057;
+}
+
+.painel-filtros .form-control,
+.painel-filtros .form-select {
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    color: #495057;
+}
+
+.painel-filtros .form-control:focus,
+.painel-filtros .form-select:focus {
+    background: #ffffff;
+    border-color: #0d6efd;
+    color: #495057;
+}
+
+.area-relatorio {
+    padding: 1.5rem;
+    flex: 1;
+}
+
+.card-instrucoes {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    color: #495057;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-instrucoes .card-header {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    color: white;
+    border-radius: 0.5rem 0.5rem 0 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.card-instrucoes h6 {
+    color: #495057;
+}
+
+.card-instrucoes p {
+    color: #495057;
+}
+
+.historico-auditoria {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.filtros-toggle {
+    background: #0d6efd;
+    color: white;
+    border: 1px solid #0d6efd;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+}
+
+.filtros-toggle:hover {
+    background: #0b5ed7;
+    border-color: #0b5ed7;
+    color: white;
+}
+
+.preview-table {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Botões de relatório rápido para tema claro */
+#relatoriosRapidos .btn-outline-primary {
+    color: #0d6efd;
+    border-color: #0d6efd;
+    background: transparent;
+}
+
+#relatoriosRapidos .btn-outline-primary:hover {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+#relatoriosRapidos .btn-outline-success {
+    color: #198754;
+    border-color: #198754;
+    background: transparent;
+}
+
+#relatoriosRapidos .btn-outline-success:hover {
+    background: #198754;
+    border-color: #198754;
+    color: white;
+}
+
+#relatoriosRapidos .btn-outline-warning {
+    color: #fd7e14;
+    border-color: #fd7e14;
+    background: transparent;
+}
+
+#relatoriosRapidos .btn-outline-warning:hover {
+    background: #fd7e14;
+    border-color: #fd7e14;
+    color: white;
+}
+
+#relatoriosRapidos .btn-outline-info {
+    color: #0dcaf0;
+    border-color: #0dcaf0;
+    background: transparent;
+}
+
+#relatoriosRapidos .btn-outline-info:hover {
+    background: #0dcaf0;
+    border-color: #0dcaf0;
+    color: white;
+}
+
+/* Tabela para tema claro */
+.table {
+    color: #495057;
+}
+
+.table thead th {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+.table tbody tr {
+    background: #ffffff;
+    border-color: #dee2e6;
+}
+
+.table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.table tbody td {
+    border-color: #dee2e6;
+}
+
+/* Alertas para tema claro */
+.alert-info {
+    background: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    border-color: #ffeaa7;
+    color: #664d03;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* Cards do histórico */
+.card {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    color: #495057;
+}
+
+.list-group-item {
+    background: #ffffff;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+.list-group-item h6 {
+    color: #495057;
+}
+
+.list-group-item small {
+    color: #6c757d;
+}
+
+/* Botões */
+.btn-primary {
+    background: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background: #0b5ed7;
+    border-color: #0b5ed7;
+}
+
+.btn-danger {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background: #bb2d3b;
+    border-color: #b02a37;
+}
+
+.btn-success {
+    background: #198754;
+    border-color: #198754;
+}
+
+.btn-success:hover {
+    background: #157347;
+    border-color: #146c43;
+}
+
+.btn-outline-primary {
+    color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-outline-primary:hover {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+/* ===========================================
+   TEMA ESCURO - Ajustes para Velzon
+   =========================================== */
+
+.dark .centro-relatorios,
+[data-bs-theme="dark"] .centro-relatorios,
+[data-layout-mode="dark"] .centro-relatorios,
+body[data-bs-theme="dark"] .centro-relatorios {
+    --modal-bg: #1a202c;
+    --modal-border: #2d3748;
+    --modal-text: #e2e8f0;
+    --modal-muted: #a0aec0;
+    --modal-primary: #63b3ed;
+}
+
+.dark .dashboard-executivo,
+[data-bs-theme="dark"] .dashboard-executivo,
+[data-layout-mode="dark"] .dashboard-executivo,
+body[data-bs-theme="dark"] .dashboard-executivo {
+    background: linear-gradient(135deg, #2a3042 0%, #3b4253 100%);
+    color: #adb5bd;
+    border-color: #495057;
+}
+
+.dark .dashboard-executivo .card-title,
+[data-bs-theme="dark"] .dashboard-executivo .card-title,
+[data-layout-mode="dark"] .dashboard-executivo .card-title,
+body[data-bs-theme="dark"] .dashboard-executivo .card-title {
+    color: #adb5bd !important;
+}
+
+.dark .navegacao-lateral,
+[data-bs-theme="dark"] .navegacao-lateral,
+[data-layout-mode="dark"] .navegacao-lateral,
+body[data-bs-theme="dark"] .navegacao-lateral {
+    background: #212529;
+    border-color: #495057;
+}
+
+.dark .nav-modulos .nav-link,
+[data-bs-theme="dark"] .nav-modulos .nav-link,
+[data-layout-mode="dark"] .nav-modulos .nav-link,
+body[data-bs-theme="dark"] .nav-modulos .nav-link {
+    color: #adb5bd;
+    border-color: #495057;
+}
+
+.dark .nav-modulos .nav-link:hover,
+[data-bs-theme="dark"] .nav-modulos .nav-link:hover,
+[data-layout-mode="dark"] .nav-modulos .nav-link:hover,
+body[data-bs-theme="dark"] .nav-modulos .nav-link:hover {
+    background: #495057;
+    color: #ffffff;
+    border-color: #6c757d;
+}
+
+.dark .nav-modulos .nav-link.active,
+[data-bs-theme="dark"] .nav-modulos .nav-link.active,
+[data-layout-mode="dark"] .nav-modulos .nav-link.active,
+body[data-bs-theme="dark"] .nav-modulos .nav-link.active {
+    background: #405189;
+    color: white;
+    border-color: #405189;
+}
+
+.dark .area-trabalho,
+[data-bs-theme="dark"] .area-trabalho,
+[data-layout-mode="dark"] .area-trabalho,
+body[data-bs-theme="dark"] .area-trabalho {
+    background: #212529;
+    border-color: #495057;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3);
+}
+
+.dark .painel-filtros,
+[data-bs-theme="dark"] .painel-filtros,
+[data-layout-mode="dark"] .painel-filtros,
+body[data-bs-theme="dark"] .painel-filtros {
+    background: #2a3042;
+    border-color: #495057;
+}
+
+.dark .painel-filtros .card,
+[data-bs-theme="dark"] .painel-filtros .card,
+[data-layout-mode="dark"] .painel-filtros .card,
+body[data-bs-theme="dark"] .painel-filtros .card {
+    background: #343a40;
+    border-color: #495057;
+    color: #adb5bd;
+}
+
+.dark .painel-filtros .card .card-title,
+[data-bs-theme="dark"] .painel-filtros .card .card-title,
+[data-layout-mode="dark"] .painel-filtros .card .card-title,
+body[data-bs-theme="dark"] .painel-filtros .card .card-title {
+    color: #adb5bd;
+}
+
+.dark .painel-filtros .form-label,
+[data-bs-theme="dark"] .painel-filtros .form-label,
+[data-layout-mode="dark"] .painel-filtros .form-label,
+body[data-bs-theme="dark"] .painel-filtros .form-label {
+    color: #adb5bd;
+}
+
+.dark .painel-filtros .form-control,
+.dark .painel-filtros .form-select,
+[data-bs-theme="dark"] .painel-filtros .form-control,
+[data-bs-theme="dark"] .painel-filtros .form-select,
+[data-layout-mode="dark"] .painel-filtros .form-control,
+[data-layout-mode="dark"] .painel-filtros .form-select,
+body[data-bs-theme="dark"] .painel-filtros .form-control,
+body[data-bs-theme="dark"] .painel-filtros .form-select {
+    background: #495057;
+    border-color: #6c757d;
+    color: #adb5bd;
+}
+
+.dark .painel-filtros .form-control:focus,
+.dark .painel-filtros .form-select:focus,
+[data-bs-theme="dark"] .painel-filtros .form-control:focus,
+[data-bs-theme="dark"] .painel-filtros .form-select:focus,
+[data-layout-mode="dark"] .painel-filtros .form-control:focus,
+[data-layout-mode="dark"] .painel-filtros .form-select:focus,
+body[data-bs-theme="dark"] .painel-filtros .form-control:focus,
+body[data-bs-theme="dark"] .painel-filtros .form-select:focus {
+    background: #495057;
+    border-color: #405189;
+    color: #adb5bd;
+}
+
+.dark .card-instrucoes,
+[data-bs-theme="dark"] .card-instrucoes,
+[data-layout-mode="dark"] .card-instrucoes,
+body[data-bs-theme="dark"] .card-instrucoes {
+    background: linear-gradient(135deg, #2a3042 0%, #343a40 100%);
+    border-color: #495057;
+    color: #adb5bd;
+}
+
+.dark .card-instrucoes .card-header,
+[data-bs-theme="dark"] .card-instrucoes .card-header,
+[data-layout-mode="dark"] .card-instrucoes .card-header,
+body[data-bs-theme="dark"] .card-instrucoes .card-header {
+    background: linear-gradient(135deg, #405189 0%, #506fd9 100%);
+    border-color: #495057;
+}
+
+.dark .card-instrucoes h6,
+[data-bs-theme="dark"] .card-instrucoes h6,
+[data-layout-mode="dark"] .card-instrucoes h6,
+body[data-bs-theme="dark"] .card-instrucoes h6 {
+    color: #adb5bd;
+}
+
+.dark .card-instrucoes p,
+[data-bs-theme="dark"] .card-instrucoes p,
+[data-layout-mode="dark"] .card-instrucoes p,
+body[data-bs-theme="dark"] .card-instrucoes p {
+    color: #adb5bd;
+}
+
+.dark .filtros-toggle,
+[data-bs-theme="dark"] .filtros-toggle,
+[data-layout-mode="dark"] .filtros-toggle,
+body[data-bs-theme="dark"] .filtros-toggle {
+    background: #405189;
+    border-color: #405189;
+}
+
+.dark .filtros-toggle:hover,
+[data-bs-theme="dark"] .filtros-toggle:hover,
+[data-layout-mode="dark"] .filtros-toggle:hover,
+body[data-bs-theme="dark"] .filtros-toggle:hover {
+    background: #506fd9;
+    border-color: #506fd9;
+}
+
+/* Botões de relatório rápido para tema escuro */
+.dark #relatoriosRapidos .btn-outline-primary,
+[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-primary,
+[data-layout-mode="dark"] #relatoriosRapidos .btn-outline-primary,
+body[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-primary {
+    color: #405189;
+    border-color: #405189;
+}
+
+.dark #relatoriosRapidos .btn-outline-primary:hover,
+[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-primary:hover,
+[data-layout-mode="dark"] #relatoriosRapidos .btn-outline-primary:hover,
+body[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-primary:hover {
+    background: #405189;
+    border-color: #405189;
+    color: white;
+}
+
+.dark #relatoriosRapidos .btn-outline-success,
+[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-success,
+[data-layout-mode="dark"] #relatoriosRapidos .btn-outline-success,
+body[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-success {
+    color: #0ab39c;
+    border-color: #0ab39c;
+}
+
+.dark #relatoriosRapidos .btn-outline-success:hover,
+[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-success:hover,
+[data-layout-mode="dark"] #relatoriosRapidos .btn-outline-success:hover,
+body[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-success:hover {
+    background: #0ab39c;
+    border-color: #0ab39c;
+    color: white;
+}
+
+.dark #relatoriosRapidos .btn-outline-warning,
+[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-warning,
+[data-layout-mode="dark"] #relatoriosRapidos .btn-outline-warning,
+body[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-warning {
+    color: #f7b84b;
+    border-color: #f7b84b;
+}
+
+.dark #relatoriosRapidos .btn-outline-warning:hover,
+[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-warning:hover,
+[data-layout-mode="dark"] #relatoriosRapidos .btn-outline-warning:hover,
+body[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-warning:hover {
+    background: #f7b84b;
+    border-color: #f7b84b;
+    color: black;
+}
+
+.dark #relatoriosRapidos .btn-outline-info,
+[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-info,
+[data-layout-mode="dark"] #relatoriosRapidos .btn-outline-info,
+body[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-info {
+    color: #299cdb;
+    border-color: #299cdb;
+}
+
+.dark #relatoriosRapidos .btn-outline-info:hover,
+[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-info:hover,
+[data-layout-mode="dark"] #relatoriosRapidos .btn-outline-info:hover,
+body[data-bs-theme="dark"] #relatoriosRapidos .btn-outline-info:hover {
+    background: #299cdb;
+    border-color: #299cdb;
+    color: white;
+}
+
+/* Tabela para tema escuro */
+.dark .table,
+[data-bs-theme="dark"] .table,
+[data-layout-mode="dark"] .table,
+body[data-bs-theme="dark"] .table {
+    color: #adb5bd;
+}
+
+.dark .table thead th,
+[data-bs-theme="dark"] .table thead th,
+[data-layout-mode="dark"] .table thead th,
+body[data-bs-theme="dark"] .table thead th {
+    background: #343a40;
+    border-color: #495057;
+    color: #adb5bd;
+}
+
+.dark .table tbody tr,
+[data-bs-theme="dark"] .table tbody tr,
+[data-layout-mode="dark"] .table tbody tr,
+body[data-bs-theme="dark"] .table tbody tr {
+    background: #2a3042;
+    border-color: #495057;
+}
+
+.dark .table tbody tr:hover,
+[data-bs-theme="dark"] .table tbody tr:hover,
+[data-layout-mode="dark"] .table tbody tr:hover,
+body[data-bs-theme="dark"] .table tbody tr:hover {
+    background: #343a40;
+}
+
+.dark .table tbody td,
+[data-bs-theme="dark"] .table tbody td,
+[data-layout-mode="dark"] .table tbody td,
+body[data-bs-theme="dark"] .table tbody td {
+    border-color: #495057;
+}
+
+/* Alertas para tema escuro */
+.dark .alert-info,
+[data-bs-theme="dark"] .alert-info,
+[data-layout-mode="dark"] .alert-info,
+body[data-bs-theme="dark"] .alert-info {
+    background: #2a3042;
+    border-color: #405189;
+    color: #adb5bd;
+}
+
+.dark .alert-warning,
+[data-bs-theme="dark"] .alert-warning,
+[data-layout-mode="dark"] .alert-warning,
+body[data-bs-theme="dark"] .alert-warning {
+    background: #2a3042;
+    border-color: #f7b84b;
+    color: #f39c12;
+}
+
+.dark .alert-danger,
+[data-bs-theme="dark"] .alert-danger,
+[data-layout-mode="dark"] .alert-danger,
+body[data-bs-theme="dark"] .alert-danger {
+    background: #2a3042;
+    border-color: #f06548;
+    color: #e74c3c;
+}
+
+/* Cards do histórico */
+.dark .card,
+[data-bs-theme="dark"] .card,
+[data-layout-mode="dark"] .card,
+body[data-bs-theme="dark"] .card {
+    background: #212529;
+    border-color: #495057;
+    color: #adb5bd;
+}
+
+.dark .card-header,
+[data-bs-theme="dark"] .card-header,
+[data-layout-mode="dark"] .card-header,
+body[data-bs-theme="dark"] .card-header {
+    background: #343a40;
+    border-color: #495057;
+    color: #adb5bd;
+}
+
+.dark .list-group-item,
+[data-bs-theme="dark"] .list-group-item,
+[data-layout-mode="dark"] .list-group-item,
+body[data-bs-theme="dark"] .list-group-item {
+    background: #2a3042;
+    border-color: #495057;
+    color: #adb5bd;
+}
+
+.dark .list-group-item h6,
+[data-bs-theme="dark"] .list-group-item h6,
+[data-layout-mode="dark"] .list-group-item h6,
+body[data-bs-theme="dark"] .list-group-item h6 {
+    color: #adb5bd;
+}
+
+.dark .list-group-item small,
+[data-bs-theme="dark"] .list-group-item small,
+[data-layout-mode="dark"] .list-group-item small,
+body[data-bs-theme="dark"] .list-group-item small {
+    color: #6c757d;
+}
+
+/* Botões para tema escuro */
+.dark .btn-primary,
+[data-bs-theme="dark"] .btn-primary,
+[data-layout-mode="dark"] .btn-primary,
+body[data-bs-theme="dark"] .btn-primary {
+    background: #405189;
+    border-color: #405189;
+}
+
+.dark .btn-primary:hover,
+[data-bs-theme="dark"] .btn-primary:hover,
+[data-layout-mode="dark"] .btn-primary:hover,
+body[data-bs-theme="dark"] .btn-primary:hover {
+    background: #506fd9;
+    border-color: #506fd9;
+}
+
+.dark .btn-danger,
+[data-bs-theme="dark"] .btn-danger,
+[data-layout-mode="dark"] .btn-danger,
+body[data-bs-theme="dark"] .btn-danger {
+    background: #f06548;
+    border-color: #f06548;
+}
+
+.dark .btn-danger:hover,
+[data-bs-theme="dark"] .btn-danger:hover,
+[data-layout-mode="dark"] .btn-danger:hover,
+body[data-bs-theme="dark"] .btn-danger:hover {
+    background: #f54e3c;
+    border-color: #f54e3c;
+}
+
+.dark .btn-success,
+[data-bs-theme="dark"] .btn-success,
+[data-layout-mode="dark"] .btn-success,
+body[data-bs-theme="dark"] .btn-success {
+    background: #0ab39c;
+    border-color: #0ab39c;
+}
+
+.dark .btn-success:hover,
+[data-bs-theme="dark"] .btn-success:hover,
+[data-layout-mode="dark"] .btn-success:hover,
+body[data-bs-theme="dark"] .btn-success:hover {
+    background: #09ad95;
+    border-color: #09ad95;
+}
+
+.dark .btn-outline-primary,
+[data-bs-theme="dark"] .btn-outline-primary,
+[data-layout-mode="dark"] .btn-outline-primary,
+body[data-bs-theme="dark"] .btn-outline-primary {
+    color: #405189;
+    border-color: #405189;
+}
+
+.dark .btn-outline-primary:hover,
+[data-bs-theme="dark"] .btn-outline-primary:hover,
+[data-layout-mode="dark"] .btn-outline-primary:hover,
+body[data-bs-theme="dark"] .btn-outline-primary:hover {
+    background: #405189;
+    border-color: #405189;
+    color: white;
+}
+
+.dark .btn-outline-secondary,
+[data-bs-theme="dark"] .btn-outline-secondary,
+[data-layout-mode="dark"] .btn-outline-secondary,
+body[data-bs-theme="dark"] .btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.dark .btn-outline-secondary:hover,
+[data-bs-theme="dark"] .btn-outline-secondary:hover,
+[data-layout-mode="dark"] .btn-outline-secondary:hover,
+body[data-bs-theme="dark"] .btn-outline-secondary:hover {
+    background: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .navegacao-lateral,
+    .painel-filtros {
+        display: none;
+    }
+
+    .area-trabalho {
+        margin-left: 0;
+    }
+
+    .dashboard-executivo .row > div {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid centro-relatorios">
+
+            <!-- Page Title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                        <h4 class="mb-sm-0"><i class="ri-file-chart-line me-2"></i>Centro de Relatórios</h4>
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                                <li class="breadcrumb-item active">Centro de Relatórios</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Layout Principal -->
+            <div class="row">
+                <!-- Navegação Lateral -->
+                <div class="col-xl-2 col-lg-3">
+                    <div class="navegacao-lateral">
+                        <h6 class="fw-bold mb-3"><i class="ri-menu-line me-2"></i>Módulos</h6>
+                        <nav class="nav nav-pills flex-column nav-modulos" id="navModulos">
+                            <a class="nav-link active" href="#abastecimento" data-module="abastecimento">
+                                <i class="ri-gas-station-line me-2"></i>Abastecimento
+                            </a>
+                            <a class="nav-link" href="#manutencao" data-module="manutencao">
+                                <i class="ri-tools-line me-2"></i>Manutenção
+                            </a>
+                            <a class="nav-link" href="#frota" data-module="frota">
+                                <i class="ri-building-line me-2"></i>Frota
+                            </a>
+                            <a class="nav-link" href="#auditoria" data-module="auditoria">
+                                <i class="ri-file-text-line me-2"></i>Auditoria
+                            </a>
+                        </nav>
+
+                        <hr class="my-3">
+
+                        <h6 class="fw-bold mb-2"><i class="ri-time-line me-2"></i>Rápido</h6>
+                        <div class="d-grid gap-2" id="relatoriosRapidos">
+                            <!-- Relatórios serão carregados dinamicamente por módulo -->
+                            <button class="btn btn-sm btn-outline-primary" onclick="relatorioRapido('abastecimento_por_secretaria')">
+                                <i class="ri-flashlight-line me-1"></i>Abast. por Secretaria
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" onclick="relatorioRapido('gastos_por_tipo_combustivel')">
+                                <i class="ri-flashlight-line me-1"></i>Gastos por Combustível
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning" onclick="relatorioRapido('consumo_medio_por_veiculo')">
+                                <i class="ri-flashlight-line me-1"></i>Consumo Médio
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Área de Trabalho -->
+                <div class="col-xl-10 col-lg-9">
+                    <div class="area-trabalho">
+                        <div class="row h-100">
+                            <!-- Painel de Filtros -->
+                            <div class="col-xl-3 painel-filtros d-none d-xl-block" id="painelFiltros">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="fw-bold mb-0"><i class="ri-filter-3-line me-2"></i>Filtros</h6>
+                                    <button class="filtros-toggle" onclick="toggleFiltros()">
+                                        <i class="ri-close-line"></i>
+                                    </button>
+                                </div>
+
+                                <form id="filtrosForm">
+                                    {% csrf_token %}
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Período</h6>
+                                            <div class="mb-3">
+                                                <label class="form-label">Data Inicial</label>
+                                                <input type="date" class="form-control" id="data_inicial" name="data_inicial">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Data Final</label>
+                                                <input type="date" class="form-control" id="data_final" name="data_final">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Frota</h6>
+                                            <div class="mb-3">
+                                                <label class="form-label">Veículo</label>
+                                                <select class="form-select" id="veiculo" name="veiculo">
+                                                    <option value="">Todos os veículos</option>
+                                                    {% for veiculo in veiculos %}
+                                                    <option value="{{ veiculo.id }}">{{ veiculo.placa }} - {{ veiculo.modelo_veiculo.descricao_modelo }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Condutor</label>
+                                                <select class="form-select" id="condutor" name="condutor">
+                                                    <option value="">Todos os condutores</option>
+                                                    {% for condutor in condutores %}
+                                                    <option value="{{ condutor.id }}">{{ condutor.nome_completo }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Secretaria</label>
+                                                <select class="form-select" id="secretaria" name="secretaria">
+                                                    <option value="">Todas as secretarias</option>
+                                                    {% for secretaria in secretarias %}
+                                                    <option value="{{ secretaria.id }}">{{ secretaria.nome }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="button" class="btn btn-primary" onclick="aplicarFiltros()">
+                                            <i class="ri-search-line me-1"></i>Aplicar Filtros
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary mt-2" onclick="limparFiltros()">
+                                            <i class="ri-refresh-line me-1"></i>Limpar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Área do Relatório -->
+                            <div class="col-xl-9 area-relatorio">
+                                <!-- Toggle Filtros Mobile -->
+                                <div class="d-xl-none mb-3">
+                                    <button class="filtros-toggle" onclick="toggleFiltrosMobile()">
+                                        <i class="ri-filter-3-line me-2"></i>Filtros
+                                    </button>
+                                </div>
+
+                                <!-- Área do Relatório -->
+                                <div class="area-relatorio-principal" id="areaRelatorio">
+                                    <div class="text-center py-5">
+                                        <i class="ri-file-chart-line" style="font-size: 4rem; color: #dee2e6;"></i>
+                                        <h4 class="mt-3 text-muted">Centro de Relatórios</h4>
+                                        <p class="text-muted">Selecione um relatório na navegação lateral para começar</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rodapé com Instruções e Histórico -->
+            <div class="row mt-4">
+                <!-- Card de Instruções -->
+                <div class="col-lg-8">
+                    <div class="card card-instrucoes">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="ri-book-open-line me-2"></i>Guia de Uso - Centro de Relatórios</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="ri-navigation-line me-2"></i>Navegação</h6>
+                                    <p class="mb-2">Use o menu lateral para selecionar o módulo desejado. Cada módulo contém relatórios específicos daquela área.</p>
+
+                                    <h6><i class="ri-filter-3-line me-2"></i>Filtros</h6>
+                                    <p class="mb-2">Configure os filtros no painel lateral para personalizar seus relatórios. Os filtros são aplicados em tempo real.</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="ri-file-chart-line me-2"></i>Relatórios</h6>
+                                    <p class="mb-2">Visualize os dados em tempo real antes de exportar. Cada relatório é exibido diretamente na área principal.</p>
+
+                                    <h6><i class="ri-download-line me-2"></i>Exportação</h6>
+                                    <p class="mb-0">Exporte para PDF ou Excel. Os PDFs incluem cabeçalho institucional e numeração de páginas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Histórico/Auditoria -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="ri-history-line me-2"></i>Histórico Recente</h5>
+                            <button class="btn btn-sm btn-outline-primary" onclick="verHistoricoCompleto()">
+                                <i class="ri-external-link-line"></i>
+                            </button>
+                        </div>
+                        <div class="card-body historico-auditoria">
+                            <div class="text-center py-3">
+                                <i class="ri-time-line" style="font-size: 2rem; color: #dee2e6;"></i>
+                                <p class="text-muted mt-2 mb-0">Nenhum relatório gerado ainda</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+// Função para formatar moeda no padrão brasileiro (R$ 1.234,56)
+function formatarMoedaBR(valor) {
+    if (valor === null || valor === 0) {
+        return 'R$ 0,00';
+    }
+
+    try {
+        // Converte para número se necessário
+        const valorFloat = parseFloat(valor);
+
+        // Formata com separadores brasileiros
+        // Primeiro formata com ponto para milhares e vírgula para decimais
+        const valorFormatado = valorFloat.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+        return `R$ ${valorFormatado}`;
+    } catch (error) {
+        return `R$ ${valor}`;
+    }
+}
+// Variáveis globais
+let filtrosAtivos = {};
+let relatorioAtual = null;
+
+// Toggle do painel de filtros
+function toggleFiltros() {
+    const painel = document.getElementById('painelFiltros');
+    painel.classList.toggle('d-none');
+    painel.classList.toggle('d-xl-block');
+}
+
+// Toggle filtros mobile
+function toggleFiltrosMobile() {
+    const painel = document.getElementById('painelFiltros');
+    if (painel.classList.contains('d-none')) {
+        painel.classList.remove('d-none');
+        painel.classList.add('d-block');
+    } else {
+        painel.classList.add('d-none');
+        painel.classList.remove('d-block');
+    }
+}
+
+// Aplicar filtros
+function aplicarFiltros() {
+    const formData = new FormData(document.getElementById('filtrosForm'));
+    filtrosAtivos = {};
+
+    for (let [key, value] of formData.entries()) {
+        if (value && value.trim() !== '') {
+            filtrosAtivos[key] = value;
+        }
+    }
+
+    // Se há um relatório atual, atualizar com os novos filtros
+    if (relatorioAtual) {
+        gerarRelatorioAjax(relatorioAtual.tipo, relatorioAtual.titulo);
+    } else {
+        // Determinar tipo de relatório baseado nos filtros aplicados
+        let tipoRelatorio = 'abastecimento_por_secretaria'; // padrão
+
+        if (filtrosAtivos.secretaria) {
+            tipoRelatorio = 'abastecimento_por_secretaria';
+        } else if (filtrosAtivos.veiculo) {
+            tipoRelatorio = 'consumo_medio_por_veiculo';
+        } else if (filtrosAtivos.condutor) {
+            tipoRelatorio = 'historico_abastecimento_por_condutor';
+        }
+
+        // Gerar relatório automaticamente
+        const titulo = `Relatório ${tipoRelatorio.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+        gerarRelatorioAjax(tipoRelatorio, titulo);
+    }
+
+    // Feedback visual removido
+}
+
+// Limpar filtros
+function limparFiltros() {
+    document.getElementById('filtrosForm').reset();
+    filtrosAtivos = {};
+
+    // Resetar datas para último mês
+    const hoje = new Date();
+    const mesPassado = new Date(hoje.getFullYear(), hoje.getMonth() - 1, hoje.getDate());
+    document.getElementById('data_inicial').value = mesPassado.toISOString().split('T')[0];
+    document.getElementById('data_final').value = hoje.toISOString().split('T')[0];
+
+    // Feedback visual removido
+}
+
+// Relatório rápido
+function relatorioRapido(tipo) {
+    // Aplicar filtros padrão (último mês)
+    const hoje = new Date();
+    const mesPassado = new Date(hoje.getFullYear(), hoje.getMonth() - 1, hoje.getDate());
+
+    filtrosAtivos = {
+        'data_inicial': mesPassado.toISOString().split('T')[0],
+        'data_final': hoje.toISOString().split('T')[0]
+    };
+
+    // Gerar relatório diretamente
+    const titulo = `Relatório ${tipo.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+    gerarRelatorioAjax(tipo, titulo);
+}
+
+// Gerar relatório via AJAX
+function gerarRelatorioAjax(tipoRelatorio, titulo) {
+    // Mostrar loading na área principal
+    const areaRelatorio = document.getElementById('areaRelatorio');
+    areaRelatorio.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+            <p class="mt-2 text-muted">Gerando relatório...</p>
+        </div>
+    `;
+
+    // Preparar dados do formulário
+    const formData = new FormData(document.getElementById('filtrosForm'));
+    formData.append('action', 'generate_report');
+    formData.append('report_type', tipoRelatorio);
+
+    // Fazer chamada AJAX
+    fetch('/relatorios/centro/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Renderizar dados do relatório
+            renderizarRelatorio(data.report_data, data.report_title, tipoRelatorio);
+
+            // Atualizar relatório atual
+            relatorioAtual = {
+                tipo: tipoRelatorio,
+                titulo: data.report_title
+            };
+
+            // Feedback visual removido
+
+            // Atualizar histórico
+            carregarHistorico();
+        } else {
+            // Feedback visual removido
+            areaRelatorio.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="ri-error-warning-line me-2"></i>
+                    Erro ao gerar relatório: ${data.error || 'Erro desconhecido'}
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Erro AJAX:', error);
+        // Feedback visual removido
+        areaRelatorio.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="ri-error-warning-line me-2"></i>
+                Erro de conexão. Tente novamente.
+            </div>
+        `;
+    });
+}
+
+// Renderizar relatório na tabela
+function renderizarRelatorio(reportData, reportTitle, reportType) {
+    const areaRelatorio = document.getElementById('areaRelatorio');
+
+    if (!reportData || reportData.length === 0) {
+        areaRelatorio.innerHTML = `
+            <div class="alert alert-warning">
+                <i class="ri-information-line me-2"></i>
+                Nenhum dado encontrado para os filtros aplicados.
+            </div>
+        `;
+        return;
+    }
+
+    // Determinar colunas baseado no tipo de relatório
+    let headers = [];
+    let dataKeys = [];
+
+    switch(reportType) {
+        case 'abastecimento_por_secretaria':
+            headers = ['Secretaria', 'Tipo Combustível', 'Litros', 'Valor Total'];
+            dataKeys = ['secretaria_nome', 'tipo_combustivel', 'total_litros', 'total_valor'];
+            break;
+        case 'gastos_por_tipo_combustivel':
+            headers = ['Tipo Combustível', 'Litros', 'Valor Total'];
+            dataKeys = ['tipo_combustivel', 'total_litros', 'total_valor'];
+            break;
+        case 'consumo_medio_por_veiculo':
+            headers = ['Placa', 'Modelo', 'Litros', 'Distância', 'Consumo Médio'];
+            dataKeys = ['veiculo__placa', 'veiculo__modelo', 'total_litros', 'distancia_total', 'media_consumo'];
+            break;
+        case 'historico_abastecimento_por_condutor':
+            headers = ['Condutor', 'Data', 'KM Atual', 'Combustível', 'Litros', 'Valor Litro', 'Valor Total'];
+            dataKeys = ['condutor_nome', 'data_abastecimento', 'quilometragem_atual', 'tipo_combustivel', 'litros', 'valor_litro', 'valor_total'];
+            break;
+        case 'veiculos_por_status_e_secretaria':
+            headers = ['Secretaria', 'Situação', 'Quantidade'];
+            dataKeys = ['secretaria__nome', 'situacao', 'count'];
+            break;
+        case 'veiculos_manutencao':
+            headers = ['Placa', 'Modelo', 'Secretaria', 'Data Início Manutenção', 'Observações'];
+            dataKeys = ['placa', 'modelo', 'secretaria', 'data_inicio_manutencao', 'observacoes'];
+            break;
+        default:
+            headers = Object.keys(reportData[0] || {});
+            dataKeys = headers;
+    }
+
+    // Construir HTML do relatório
+    let reportHtml = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">${reportTitle}</h5>
+            <div class="btn-export-group">
+                <button class="btn btn-sm btn-danger" onclick="exportarPDF('${reportType}')">
+                    <i class="ri-file-pdf-line me-1"></i>PDF
+                </button>
+                <button class="btn btn-sm btn-success" onclick="exportarExcel('${reportType}')">
+                    <i class="ri-file-excel-line me-1"></i>Excel
+                </button>
+            </div>
+        </div>
+
+        <div class="alert alert-info mb-3">
+            <i class="ri-information-line me-2"></i>
+            ${reportData.length} registros encontrados
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        ${headers.map(header => `<th>${header}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    reportData.forEach(row => {
+        reportHtml += '<tr>';
+        dataKeys.forEach(key => {
+            let value = row[key];
+
+            // Formatação especial para valores
+            if (key.includes('valor_litro')) {
+                value = typeof value === 'number' && value > 0 ? formatarMoedaBR(value) : (value || '-');
+            } else if (key.includes('valor') || key.includes('total_valor')) {
+                value = typeof value === 'number' ? formatarMoedaBR(value) : value;
+            } else if (key.includes('litros') || key.includes('total_litros')) {
+                value = typeof value === 'number' ? `${value.toFixed(2)} L` : value;
+            } else if (key.includes('distancia') || key.includes('distancia_total')) {
+                value = typeof value === 'number' ? `${value.toFixed(2)} Km` : value;
+            } else if (key.includes('media_consumo')) {
+                value = typeof value === 'number' ? `${value.toFixed(2)} Km/L` : value;
+            }
+
+            reportHtml += `<td>${value || '-'}</td>`;
+        });
+        reportHtml += '</tr>';
+    });
+
+    reportHtml += `
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    areaRelatorio.innerHTML = reportHtml;
+}
+
+// Carregar histórico via AJAX
+function carregarHistorico() {
+    fetch('/relatorios/centro/', {
+        method: 'POST',
+        body: new URLSearchParams({
+            'action': 'get_history',
+            'csrfmiddlewaretoken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            renderizarHistorico(data.history);
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao carregar histórico:', error);
+    });
+}
+
+// Renderizar histórico
+function renderizarHistorico(historyData) {
+    const historicoContainer = document.querySelector('.historico-auditoria');
+
+    if (!historyData || historyData.length === 0) {
+        historicoContainer.innerHTML = `
+            <div class="text-center py-3">
+                <i class="ri-time-line" style="font-size: 2rem; color: #dee2e6;"></i>
+                <p class="text-muted mt-2 mb-0">Nenhum relatório gerado ainda</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '<div class="list-group list-group-flush">';
+    historyData.forEach(item => {
+        html += `
+            <div class="list-group-item px-0">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1">${item.titulo}</h6>
+                        <small class="text-muted">${item.tipo_relatorio} • ${item.numero_registros} registros</small>
+                    </div>
+                    <small class="text-muted">${item.data_geracao}</small>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+
+    historicoContainer.innerHTML = html;
+}
+
+// Exportar PDF
+function exportarPDF(tipo) {
+    const params = new URLSearchParams({
+        report_type: tipo,
+        ...filtrosAtivos
+    });
+
+    window.open(`/relatorios/export/pdf/?${params.toString()}`, '_blank');
+    // Feedback visual removido
+}
+
+// Exportar Excel
+function exportarExcel(tipo) {
+    const params = new URLSearchParams({
+        report_type: tipo,
+        ...filtrosAtivos
+    });
+
+    window.location.href = `/relatorios/export/excel/?${params.toString()}`;
+    // Feedback visual removido
+}
+
+// Toast notifications
+function showToast(message, type = 'info') {
+    // Implementação simples de toast
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// Navegação por módulos
+document.addEventListener('DOMContentLoaded', function() {
+    const navLinks = document.querySelectorAll('#navModulos .nav-link');
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Remover active de todos
+            navLinks.forEach(l => l.classList.remove('active'));
+            // Adicionar active no clicado
+            this.classList.add('active');
+
+            const module = this.dataset.module;
+            atualizarRelatoriosPorModulo(module);
+            // Feedback visual removido
+        });
+    });
+
+    // Inicializar filtros com último mês
+    limparFiltros();
+
+    // Carregar histórico inicial
+    carregarHistorico();
+
+    // Inicializar com módulo abastecimento
+    atualizarRelatoriosPorModulo('abastecimento');
+});
+
+// Atualizar relatórios por módulo
+function atualizarRelatoriosPorModulo(module) {
+    const container = document.getElementById('relatoriosRapidos');
+    let buttonsHtml = '';
+
+    switch(module) {
+        case 'abastecimento':
+            buttonsHtml = `
+                <button class="btn btn-sm btn-outline-primary" onclick="relatorioRapido('abastecimento_por_secretaria')">
+                    <i class="ri-flashlight-line me-1"></i>Abast. por Secretaria
+                </button>
+                <button class="btn btn-sm btn-outline-success" onclick="relatorioRapido('gastos_por_tipo_combustivel')">
+                    <i class="ri-flashlight-line me-1"></i>Gastos por Combustível
+                </button>
+                <button class="btn btn-sm btn-outline-warning" onclick="relatorioRapido('consumo_medio_por_veiculo')">
+                    <i class="ri-flashlight-line me-1"></i>Consumo Médio
+                </button>
+                <button class="btn btn-sm btn-outline-info" onclick="relatorioRapido('historico_abastecimento_por_condutor')">
+                    <i class="ri-flashlight-line me-1"></i>Histórico por Condutor
+                </button>
+            `;
+            break;
+
+        case 'manutencao':
+            buttonsHtml = `
+                <button class="btn btn-sm btn-outline-primary" onclick="relatorioRapido('veiculos_manutencao')">
+                    <i class="ri-flashlight-line me-1"></i>Veículos em Manutenção
+                </button>
+                <div class="text-center text-muted small mt-2">
+                    <i class="ri-information-line me-1"></i>
+                    Módulo em desenvolvimento
+                </div>
+            `;
+            break;
+
+        case 'frota':
+            buttonsHtml = `
+                <button class="btn btn-sm btn-outline-primary" onclick="relatorioRapido('veiculos_por_status_e_secretaria')">
+                    <i class="ri-flashlight-line me-1"></i>Status por Secretaria
+                </button>
+                <div class="text-center text-muted small mt-2">
+                    <i class="ri-information-line me-1"></i>
+                    Mais relatórios em breve
+                </div>
+            `;
+            break;
+
+        case 'auditoria':
+            buttonsHtml = `
+                <button class="btn btn-sm btn-outline-primary" onclick="relatorioRapido('veiculos_documentacao_vencida')">
+                    <i class="ri-flashlight-line me-1"></i>Documentação Vencida
+                </button>
+                <button class="btn btn-sm btn-outline-warning" onclick="relatorioRapido('condutores_documentacao_vencida')">
+                    <i class="ri-flashlight-line me-1"></i>Condutores Vencidos
+                </button>
+                <div class="text-center text-muted small mt-2">
+                    <i class="ri-information-line me-1"></i>
+                    Relatórios TCE/Sagres
+                </div>
+            `;
+            break;
+
+        default:
+            buttonsHtml = `
+                <div class="text-center text-muted">
+                    <i class="ri-information-line me-2"></i>
+                    Selecione um módulo
+                </div>
+            `;
+    }
+
+    container.innerHTML = buttonsHtml;
+}
+</script>
+{% endblock extra_js %}

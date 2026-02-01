@@ -1,0 +1,429 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" {% block html %}data-layout="vertical" data-topbar="light" data-bs-theme="light" data-sidebar="dark"
+    data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable" {% endblock html %}>
+
+<head>
+    <meta charset="utf-8" />
+    <title>{% block title %}{% endblock title %} | Velzon - Admin & Dashboard Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
+    <meta content="Themesbrand" name="author" />
+    <!-- App favicon -->
+    {% if configuracao_site.favicon %}
+    <link rel="shortcut icon" href="{{ configuracao_site.favicon.url }}">
+    {% else %}
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico'%}">
+    {% endif %}
+
+    <!-- Sweet Alert css-->
+    <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}?v={{ APP_VERSION }}" rel="stylesheet" type="text/css" />
+
+    {% block css %}
+    <!-- swiper slider css -->
+    <link href="{% static 'libs/swiper/swiper-bundle.min.css'%}?v={{ APP_VERSION }}" rel="stylesheet" type="text/css" />
+
+    <!-- Layout config Js -->
+    <script src="{% static 'js/layout.js'%}?v={{ APP_VERSION }}"></script>
+    <!-- Bootstrap Css -->
+    <link href="{% static 'css/bootstrap.min.css'%}?v={{ APP_VERSION }}" id="bootstrap-style" rel="stylesheet" type="text/css" />
+    <!-- Icons Css -->
+    <link href="{% static 'css/icons.min.css'%}?v={{ APP_VERSION }}" rel="stylesheet" type="text/css" />
+    <!-- App Css-->
+    <link href="{% static 'css/app.min.css'%}?v={{ APP_VERSION }}" id="app-style" rel="stylesheet" type="text/css" />
+    <!-- custom Css-->
+    <link href="{% static 'css/custom.min.css'%}?v={{ APP_VERSION }}" id="app-style" rel="stylesheet" type="text/css" />
+
+    <!-- JAVASCRIPT -->
+    <script src="{% static 'libs/bootstrap/js/bootstrap.bundle.min.js'%}?v={{ APP_VERSION }}"></script>
+    {% block extra_css %}
+    {% endblock extra_css %}
+    {% endblock css %}
+</head>
+
+<body>
+    <!-- Begin page -->
+    <div id="layout-wrapper">
+        {% block header %}
+        {% include "partials/topbar.html" %}
+        {% endblock header %}
+        {% block sidebar %}
+        {% include "partials/sidebar.html" %}
+        {% endblock sidebar %}
+        {% block content %}
+        {% block pagetitle %}
+        {% endblock pagetitle %}
+        {% block footer %}
+        {% include "partials/footer.html" %}
+        {% endblock footer %}
+        {% endblock content %}
+    </div>
+
+    {% block extra_content %}
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="deleteConfirmationModal" class="modal fade zoomIn" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        id="delete-close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mt-2 text-center">
+                        <lord-icon src="https://cdn.lordicon.com/gsqxdxog.json" trigger="loop"
+                            colors="primary:#f7b84b,secondary:#f06548" style="width:100px;height:100px"></lord-icon>
+                        <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
+                            <h4>Você tem certeza?</h4>
+                            <p class="text-muted mx-4 mb-0">Você tem certeza que deseja remover este registro? Esta ação
+                                não pode ser desfeita.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
+                        <button type="button" class="btn w-sm btn-light" data-bs-dismiss="modal">Cancelar</button>
+                        <form id="delete-form" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn w-sm btn-danger" id="delete-record">Sim, Excluir!</button>
+                        </form>
+                    </div>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <!-- Modal de Confirmação de Ação Genérico -->
+    <div id="actionConfirmationModal" class="modal fade zoomIn" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="action-modal-title">Confirmar Ação</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <h4 id="action-modal-question" class="mb-3">Você tem certeza?</h4>
+                    <p class="text-muted mb-0 px-4" id="action-modal-description">Deseja realmente executar esta ação?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light w-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <a href="#" id="action-confirm-button" class="btn btn-primary w-sm">Sim, Confirmar</a>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    {% endblock extra_content %}
+
+    <!-- END layout-wrapper -->
+    {% block right_sidebar %}
+    {% include "partials/customizer.html" %}
+    {% endblock right_sidebar %}
+
+    {% block javascript %}
+
+    <!-- jQuery -->
+    <script src="{% static 'libs/jquery/jquery.min.js'%}?v={{ APP_VERSION }}"></script>
+
+    <!-- Cleave.js para máscaras -->
+    <script src="{% static 'libs/cleave.js/cleave.min.js'%}?v={{ APP_VERSION }}"></script>
+
+    <!-- Flatpickr para campos de data -->
+    <script src="{% static 'libs/flatpickr/flatpickr.min.js'%}?v={{ APP_VERSION }}"></script>
+    <link href="{% static 'libs/flatpickr/flatpickr.min.css'%}?v={{ APP_VERSION }}" rel="stylesheet" type="text/css" />
+
+    <!-- Script para prevenir múltiplos cliques em botões de submit -->
+    <script src="{% static 'js/prevent_double_click.js' %}?v={{ APP_VERSION }}"></script>
+    <!-- JAVASCRIPT -->
+    <script src="{% static 'libs/simplebar/simplebar.min.js'%}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'libs/node-waves/waves.min.js'%}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'libs/feather-icons/feather.min.js'%}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/pages/plugins/lord-icon-2.1.0.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/plugins.js' %}?v={{ APP_VERSION }}"></script>
+
+    <!-- swiper slider js -->
+    <script src="{% static 'libs/swiper/swiper-bundle.min.js'%}?v={{ APP_VERSION }}"></script>
+
+    <!-- App js -->
+    <script src="{% static 'js/app.js' %}?v={{ APP_VERSION }}"></script>
+
+    <!-- Sweet Alerts js -->
+    <script src="{% static 'libs/sweetalert2/sweetalert2.min.js' %}?v={{ APP_VERSION }}"></script>
+
+    <!-- Função global para notificações toast padronizadas -->
+    <script>
+        // Função padronizada para mostrar notificações toast
+        window.showSystemToast = function(message, type = 'info') {
+            let iconType = type;
+            let iconColor, backgroundColor, textColor;
+
+            // Mapeia os tipos para as cores padronizadas do sistema
+            switch (type) {
+                case 'success':
+                    iconColor = '#fff';
+                    textColor = '#fff';
+                    backgroundColor = '#198754'; // Verde padrão do sistema
+                    break;
+                case 'error':
+                    iconColor = '#fff';
+                    textColor = '#fff';
+                    backgroundColor = '#dc3545'; // Vermelho padrão do sistema
+                    break;
+                case 'warning':
+                    iconColor = '#000';
+                    textColor = '#000';
+                    backgroundColor = '#ffc107'; // Amarelo padrão do sistema
+                    break;
+                case 'info':
+                    iconColor = '#fff';
+                    textColor = '#fff';
+                    backgroundColor = '#0dcaf0'; // Azul claro padrão do sistema
+                    break;
+                default:
+                    iconColor = '#fff';
+                    textColor = '#fff';
+                    backgroundColor = '#6c757d'; // Cinza para tipos desconhecidos
+                    iconType = 'info';
+                    break;
+            }
+
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                title: message,
+                icon: iconType,
+                iconColor: iconColor,
+                color: textColor,
+                background: backgroundColor,
+                timer: 5000, // Reduzido para 5 segundos para melhor UX
+                timerProgressBar: true,
+                showConfirmButton: false,
+                showCloseButton: true,
+                customClass: {
+                    popup: 'system-toast-notification'
+                },
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+        };
+    </script>
+
+
+
+    <style>
+        .swal2-timer-progress-bar {
+            /* Altera a cor de fundo da barra de progresso */
+            background-color: #fff !important;
+            /* Exemplo: Um verde vibrante */
+        }
+
+        .swal2-toast .swal2-title {
+            color: #fff !important;
+            /* Força a fonte para preto */
+        }
+    </style>
+
+    <!-- Script do Modal de Exclusão Genérico -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const deleteModalEl = document.getElementById('deleteConfirmationModal');
+            if (deleteModalEl) {
+                // Adiciona um listener para o evento 'show.bs.modal'
+                // Este evento é disparado pelo Bootstrap *antes* do modal ser exibido.
+                deleteModalEl.addEventListener('show.bs.modal', function (event) {
+                    // 'event.relatedTarget' é o elemento que acionou o modal (o nosso link de exclusão)
+                    const triggerLink = event.relatedTarget;
+
+                    // Pega a URL do atributo 'href' do link
+                    const deleteUrl = triggerLink.getAttribute('href');
+
+                    // Encontra o formulário dentro do modal e define o seu 'action'
+                    const deleteForm = document.getElementById('delete-form');
+                    deleteForm.setAttribute('action', deleteUrl);
+                });
+            }
+
+            // Script do Modal de Confirmação de Ação Genérico
+            const actionModalEl = document.getElementById('actionConfirmationModal');
+            if (actionModalEl) {
+                actionModalEl.addEventListener('show.bs.modal', function (event) {
+                    const triggerButton = event.relatedTarget;
+
+                    // Pega os dados do botão que acionou o modal
+                    const url = triggerButton.getAttribute('data-action-url');
+                    const title = triggerButton.getAttribute('data-modal-title');
+                    const question = triggerButton.getAttribute('data-modal-question');
+                    const description = triggerButton.getAttribute('data-modal-description');
+                    const buttonText = triggerButton.getAttribute('data-modal-button-text');
+                    const buttonClass = triggerButton.getAttribute('data-modal-button-class');
+
+                    // Atualiza o conteúdo do modal
+                    document.getElementById('action-modal-title').textContent = title || 'Confirmar Ação';
+                    document.getElementById('action-modal-question').textContent = question || 'Você tem certeza?';
+                    document.getElementById('action-modal-description').innerHTML = description || 'Deseja realmente executar esta ação?';
+                    const confirmButton = document.getElementById('action-confirm-button');
+                    confirmButton.href = url;
+                    confirmButton.textContent = buttonText || 'Sim, Confirmar';
+                    confirmButton.className = `btn ${buttonClass || 'btn-primary'} w-sm`;
+                });
+            }
+        });
+    </script>
+
+    <!-- Sidebar improvements -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fechar sidebar em mobile após clicar em links
+        const sidebarLinks = document.querySelectorAll('.navbar-nav .nav-link');
+        const body = document.body;
+
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                // Verificar se está em mobile e sidebar está aberto
+                if (window.innerWidth <= 767.98 && body.classList.contains('vertical-sidebar-enable')) {
+                    // Fechar sidebar
+                    body.classList.remove('vertical-sidebar-enable');
+                    document.documentElement.setAttribute('data-sidebar-size', 'lg');
+                }
+            });
+        });
+
+        // Melhorar overlay click
+        const overlay = document.querySelector('.vertical-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                body.classList.remove('vertical-sidebar-enable');
+                document.documentElement.setAttribute('data-sidebar-size', sessionStorage.getItem('data-sidebar-size') || 'lg');
+            });
+        }
+
+        // Inicializar tooltips dos botões de atalho
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Os tooltips para o sidebar colapsado agora usam o atributo 'title' nativo do HTML
+        // Isso garante consistência com o comportamento padrão do navegador
+    });
+    </script>
+
+    <!-- Form utils -->
+    <script>
+    // Form Utils - Versão simplificada para evitar erros
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar máscaras básicas se Cleave estiver disponível
+        if (typeof Cleave !== 'undefined') {
+            // Máscara para CPF
+            document.querySelectorAll('[data-mask="cpf"]').forEach(input => {
+                if (!input.cleave) {
+                    input.cleave = new Cleave(input, {
+                        delimiters: ['.', '.', '-'],
+                        blocks: [3, 3, 3, 2],
+                        numericOnly: true
+                    });
+                }
+            });
+
+            // Máscara para CNPJ
+            document.querySelectorAll('[data-mask="cnpj"]').forEach(input => {
+                if (!input.cleave) {
+                    input.cleave = new Cleave(input, {
+                        delimiters: ['.', '.', '/', '-'],
+                        blocks: [2, 3, 3, 4, 2],
+                        numericOnly: true
+                    });
+                }
+            });
+
+            // Máscara para telefone
+            document.querySelectorAll('[data-mask="telefone"]').forEach(input => {
+                if (!input.cleave) {
+                    input.cleave = new Cleave(input, {
+                        delimiters: ['(', ')', ' ', '-'],
+                        blocks: [0, 2, 0, 5, 4],
+                        numericOnly: true
+                    });
+                }
+            });
+
+            // Máscara para CEP
+            document.querySelectorAll('[data-mask="cep"]').forEach(input => {
+                if (!input.cleave) {
+                    input.cleave = new Cleave(input, {
+                        delimiters: ['-'],
+                        blocks: [5, 3],
+                        numericOnly: true
+                    });
+                }
+            });
+        }
+
+        // Inicializar date pickers se Flatpickr estiver disponível
+        if (typeof flatpickr !== 'undefined') {
+            // Date picker para datas futuras
+            document.querySelectorAll('[data-datepicker="future"]').forEach(input => {
+                if (!input.flatpickr) {
+                    try {
+                        input.flatpickr = flatpickr(input, {
+                            dateFormat: "d/m/Y",
+                            minDate: "today",
+                            allowInput: true
+                        });
+                    } catch (error) {
+                        console.warn('Erro ao inicializar date picker futuro:', error);
+                    }
+                }
+            });
+
+            // Date picker para datas gerais
+            document.querySelectorAll('[data-datepicker="general"]').forEach(input => {
+                if (!input.flatpickr) {
+                    try {
+                        input.flatpickr = flatpickr(input, {
+                            dateFormat: "d/m/Y",
+                            allowInput: true
+                        });
+                    } catch (error) {
+                        console.warn('Erro ao inicializar date picker geral:', error);
+                    }
+                }
+            });
+        }
+
+        // ViaCEP básico
+        document.querySelectorAll('[data-viacep]').forEach(cepInput => {
+            cepInput.addEventListener('blur', function() {
+                const cep = this.value.replace(/\D/g, '');
+                if (cep.length === 8) {
+                    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.erro) {
+                                const form = this.closest('form');
+                                const campos = {
+                                    'endereco': data.logradouro,
+                                    'bairro': data.bairro,
+                                    'cidade': data.localidade,
+                                    'estado': data.uf
+                                };
+
+                                Object.keys(campos).forEach(campo => {
+                                    const input = form.querySelector(`[name="${campo}"]`) ||
+                                                 form.querySelector(`[id="id_${campo}"]`);
+                                    if (input && campos[campo]) {
+                                        input.value = campos[campo];
+                                    }
+                                });
+                            }
+                        })
+                        .catch(error => console.warn('Erro ViaCEP:', error));
+                }
+            });
+        });
+    });
+    </script>
+
+    {% block extra_js %}{% endblock extra_js %}
+{% endblock javascript %}
+</body>
+
+</html>

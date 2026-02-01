@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscrição Recebida</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .email-header {
+            background-color: #4a68c0;
+            color: #ffffff;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .email-header img {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        .email-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .email-body {
+            padding: 30px;
+            line-height: 1.6;
+            color: #333333;
+        }
+        .email-body p {
+            margin: 0 0 15px;
+        }
+        .email-body .cta-button {
+            display: inline-block;
+            background-color: #4a68c0;
+            color: #ffffff;
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        .email-footer {
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #888888;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            {% if logo_url %}
+                <img src="{{ logo_url }}" alt="Logo do Sistema">
+            {% endif %}
+            <h1>Inscrição Recebida!</h1>
+        </div>
+        <div class="email-body">
+            <p>Olá, {{ inscricao.comerciante.get_full_name|default:inscricao.comerciante.username }},</p>
+            <p>Recebemos com sucesso sua inscrição para o evento <strong>{{ inscricao.evento.nome }}</strong>.</p>
+            <p>Nossa equipe irá analisar as informações e você será notificado sobre as próximas etapas.</p>
+            <p>Você pode acompanhar o andamento da sua inscrição a qualquer momento através da plataforma.</p>
+            <a href="{{ site_url }}" class="cta-button">Acompanhar Inscrição</a>
+        </div>
+        <div class="email-footer">
+            <p>Esta é uma mensagem automática. Por favor, não responda.</p>
+        </div>
+    </div>
+</body>
+</html>

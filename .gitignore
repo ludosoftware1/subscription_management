@@ -1,0 +1,99 @@
+static/
+
+# ---- Arquivos e pastas do Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+node_modules/
+
+# ---- Ambientes virtuais ----
+venv/
+.env/
+env/
+.venv/
+ENV/
+Pipfile.lock
+poetry.lock
+
+# ---- Dependências e builds ----
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ---- Logs e bancos de dados ----
+*.log
+*.pot
+*.pyc
+*.pyo
+*.sqlite3
+db.sqlite3
+
+# ---- Configurações locais e credenciais ----
+*.env
+.env.*
+config.local.*
+settings_local.py
+local_settings.py
+
+# ---- IDEs e editores ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.bak
+
+# ---- Arquivos de sistema ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Django ----
+staticfiles/
+media/
+*.mo
+
+# ---- Jupyter Notebooks ----
+.ipynb_checkpoints
+*.ipynb
+
+# ---- Testes e cobertura ----
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.pytest_cache/
+
+# ---- PyInstaller ----
+*.manifest
+*.spec
+
+# ---- MyPy, Pylint, e outras ferramentas ----
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+.pyright/
+
+# ---- Arquivos temporários ----
+*.tmp
+*.temp
+*.bak
+~$*

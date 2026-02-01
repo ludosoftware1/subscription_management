@@ -1,0 +1,540 @@
+{% extends "partials/base_minimal.html" %}
+{% load static %}
+
+{% block title %}Crie sua Conta{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .form-step {
+        display: none;
+    }
+    .form-step-active {
+        display: block;
+    }
+    .progress-bar {
+        transition: width 0.3s ease-in-out;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-body p-lg-5">
+                    <div class="text-center mb-4">
+                        <h1 class="h2 fw-bold">Crie sua Conta</h1>
+                        <p class="text-muted">Siga as etapas para criar sua conta e solicitar eventos.</p>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="progress mb-4" style="height: 20px;">
+                        <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 33.3%;" aria-valuenow="33.3" aria-valuemin="0" aria-valuemax="100">Etapa 1 de 3</div>
+                    </div>
+
+                    <form id="multi-step-form" class="needs-validation" novalidate method="POST" action="{% url 'pages:solicitar_evento_cadastro' %}">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Etapa 1: Dados Pessoais -->
+                        <div id="step-1" class="form-step">
+                            <fieldset>
+                                <legend class="fs-5 fw-medium mb-3">Dados Pessoais</legend>
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <div class="form-floating">
+                                            {{ form.nome_completo }}
+                                            <label for="{{ form.nome_completo.id_for_label }}">{{ form.nome_completo.label }}</label>
+                                            {% if form.nome_completo.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.nome_completo.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="invalid-feedback">Por favor, insira seu nome completo.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            {{ form.cpf }}
+                                            <label for="{{ form.cpf.id_for_label }}">{{ form.cpf.label }}</label>
+                                            {% if form.cpf.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.cpf.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="invalid-feedback">Por favor, insira um CPF válido.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            {{ form.data_nascimento }}
+                                            <label for="{{ form.data_nascimento.id_for_label }}">{{ form.data_nascimento.label }}</label>
+                                            {% if form.data_nascimento.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.data_nascimento.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="invalid-feedback">Por favor, insira sua data de nascimento.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            {{ form.email }}
+                                            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                                            {% if form.email.errors %}
+                                                <div class="invalid-feedback d-block" id="email-feedback">
+                                                    {% for error in form.email.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="invalid-feedback" id="email-feedback">Por favor, insira um e-mail válido.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            {{ form.telefone }}
+                                            <label for="{{ form.telefone.id_for_label }}">{{ form.telefone.label }}</label>
+                                            {% if form.telefone.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.telefone.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="invalid-feedback">Por favor, insira um telefone válido.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end mt-4">
+                                    <button type="button" class="btn btn-primary btn-next">Avançar</button>
+                                </div>
+                            </fieldset>
+                        </div>
+
+                        <!-- Etapa 2: Endereço -->
+                        <div id="step-2" class="form-step">
+                            <fieldset>
+                                <legend class="fs-5 fw-medium mb-3">Endereço</legend>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <div class="form-floating">
+                                            {{ form.cep }}
+                                            <label for="{{ form.cep.id_for_label }}">{{ form.cep.label }}</label>
+                                            {% if form.cep.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.cep.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="invalid-feedback">Por favor, insira um CEP válido.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="form-floating">
+                                            {{ form.rua }}
+                                            <label for="{{ form.rua.id_for_label }}">{{ form.rua.label }}</label>
+                                            {% if form.rua.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.rua.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="invalid-feedback">Por favor, insira sua rua.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-floating">
+                                            {{ form.numero }}
+                                            <label for="{{ form.numero.id_for_label }}">{{ form.numero.label }}</label>
+                                            {% if form.numero.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.numero.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="invalid-feedback">Por favor, insira o número.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="form-floating">
+                                            {{ form.complemento }}
+                                            <label for="{{ form.complemento.id_for_label }}">{{ form.complemento.label }}</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            {{ form.bairro }}
+                                            <label for="{{ form.bairro.id_for_label }}">{{ form.bairro.label }}</label>
+                                            {% if form.bairro.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.bairro.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="invalid-feedback">Por favor, insira seu bairro.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-floating">
+                                            {{ form.cidade }}
+                                            <label for="{{ form.cidade.id_for_label }}">{{ form.cidade.label }}</label>
+                                            {% if form.cidade.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.cidade.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="invalid-feedback">Por favor, insira sua cidade.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-floating">
+                                            {{ form.uf }}
+                                            <label for="{{ form.uf.id_for_label }}">{{ form.uf.label }}</label>
+                                            {% if form.uf.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.uf.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="invalid-feedback">Por favor, selecione seu estado.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-secondary btn-prev">Voltar</button>
+                                    <button type="button" class="btn btn-primary btn-next">Avançar</button>
+                                </div>
+                            </fieldset>
+                        </div>
+
+                        <!-- Etapa 3: Segurança -->
+                        <div id="step-3" class="form-step">
+                            <fieldset>
+                                <legend class="fs-5 fw-medium mb-3">Segurança</legend>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            {{ form.password1 }}
+                                            <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+                                            {% if form.password1.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.password1.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="invalid-feedback">A senha deve ter pelo menos 6 caracteres.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            {{ form.password2 }}
+                                            <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+                                            {% if form.password2.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.password2.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div class="invalid-feedback">As senhas não coincidem.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-secondary btn-prev">Voltar</button>
+                                    <button class="btn btn-primary btn-lg" type="submit">
+                                        <i class="ri-user-add-line me-2"></i> Criar minha conta
+                                    </button>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </form>
+
+                    <div class="mt-5 text-center">
+                        <p class="mb-0">Já tem uma conta? <a href="{% url 'pages:authentication.signin_basic' %}" class="fw-semibold text-primary text-decoration-underline">Faça o Login</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.4.3/imask.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('multi-step-form');
+    const steps = Array.from(form.querySelectorAll('.form-step'));
+    const nextButtons = form.querySelectorAll('.btn-next');
+    const prevButtons = form.querySelectorAll('.btn-prev');
+    const progressBar = document.getElementById('progress-bar');
+    const emailField = document.getElementById('email');
+    const emailFeedback = document.getElementById('email-feedback');
+    const cepField = document.getElementById('id_cep');
+    const passwordField = document.getElementById('password');
+    const password2Field = document.getElementById('password2');
+    let currentStep = 0;
+    let emailTypingTimer;
+
+    const masks = {
+        'id_cpf': { mask: '000.000.000-00' },
+        'id_telefone': { mask: '(00) 00000-0000' },
+        'id_cep': { mask: '00000-000' }
+    };
+
+    Object.keys(masks).forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            IMask(element, masks[id]);
+        }
+    });
+
+    function updateProgressBar() {
+        const progress = ((currentStep + 1) / steps.length) * 100;
+        progressBar.style.width = `${progress}%`;
+        progressBar.textContent = `Etapa ${currentStep + 1} de ${steps.length}`;
+    }
+
+    function showStep(stepIndex) {
+        steps.forEach((step, index) => {
+            step.classList.toggle('form-step-active', index === stepIndex);
+        });
+        updateProgressBar();
+    }
+
+    async function validateStep(stepIndex) {
+        let isValid = true;
+        const stepFields = steps[stepIndex].querySelectorAll('input[required], select[required]');
+        
+        for (const field of stepFields) {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        }
+
+        if (stepIndex === 0 && emailField.value.trim()) {
+            const isEmailAvailable = await checkEmail();
+            if (!isEmailAvailable) {
+                isValid = false;
+            }
+        }
+        
+        return isValid;
+    }
+
+    function checkEmail() {
+        return new Promise(resolve => {
+            clearTimeout(emailTypingTimer);
+            emailTypingTimer = setTimeout(() => {
+                const email = emailField.value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (!emailRegex.test(email)) {
+                    emailField.classList.add('is-invalid');
+                    emailFeedback.textContent = 'Por favor, insira um e-mail válido.';
+                    resolve(false);
+                    return;
+                }
+
+                fetch(`/pages/ajax/check-email-availability/?email=${email}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.is_taken) {
+                            emailField.classList.add('is-invalid');
+                            emailFeedback.textContent = 'Este e-mail já está em uso.';
+                            resolve(false);
+                        } else {
+                            emailField.classList.remove('is-invalid');
+                            resolve(true);
+                        }
+                    });
+            }, 500);
+        });
+    }
+
+    nextButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            const isValid = await validateStep(currentStep);
+            if (isValid) {
+                if (currentStep < steps.length - 1) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            }
+        });
+    });
+
+    prevButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+    });
+
+    const requiredFieldNames = ['nome_completo', 'cpf', 'data_nascimento', 'email', 'telefone', 'cep', 'rua', 'numero', 'bairro', 'cidade', 'uf', 'password1', 'password2'];
+    requiredFieldNames.forEach(name => {
+        const field = form.querySelector(`[name="${name}"]`);
+        if (field) {
+            field.required = true;
+        }
+    });
+
+    if (emailField) {
+        emailField.addEventListener('input', checkEmail);
+    }
+
+    function fetchAddress() {
+        const cep = cepField.value.replace(/\D/g, '');
+        if (cep.length === 8) {
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.erro) {
+                        form.querySelector('#id_rua').value = data.logradouro;
+                        form.querySelector('#id_bairro').value = data.bairro;
+                        form.querySelector('#id_cidade').value = data.localidade;
+                        form.querySelector('#id_uf').value = data.uf;
+                    }
+                });
+        }
+    }
+
+    if (cepField) {
+        cepField.addEventListener('blur', fetchAddress);
+    }
+
+    function showErrorStep() {
+        const errorField = form.querySelector('.is-invalid');
+        if (errorField) {
+            const errorStep = errorField.closest('.form-step');
+            if (errorStep) {
+                const errorStepIndex = steps.indexOf(errorStep);
+                showStep(errorStepIndex);
+            }
+        }
+    }
+
+    function validatePasswords() {
+        const password = passwordField.value;
+        const password2 = password2Field.value;
+        const minLength = 6;
+
+        // Valida o campo de senha 1
+        if (password.length > 0) {
+            if (password.length < minLength) {
+                passwordField.classList.remove('is-valid');
+                passwordField.classList.add('is-invalid');
+            } else {
+                passwordField.classList.remove('is-invalid');
+                passwordField.classList.add('is-valid');
+            }
+        } else {
+            passwordField.classList.remove('is-valid', 'is-invalid');
+        }
+
+        // Valida o campo de senha 2
+        if (password2.length > 0) {
+            if (password === password2 && password.length >= minLength) {
+                password2Field.classList.remove('is-invalid');
+                password2Field.classList.add('is-valid');
+            } else {
+                password2Field.classList.remove('is-valid');
+                password2Field.classList.add('is-invalid');
+            }
+        } else {
+            password2Field.classList.remove('is-valid', 'is-invalid');
+        }
+    }
+
+    if (passwordField && password2Field) {
+        passwordField.addEventListener('input', validatePasswords);
+        password2Field.addEventListener('input', validatePasswords);
+    }
+
+    const errorField = form.querySelector('.is-invalid');
+    if (errorField) {
+        const errorStep = errorField.closest('.form-step');
+        if (errorStep) {
+            currentStep = steps.indexOf(errorStep);
+        }
+    }
+    showStep(currentStep);
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        let allStepsValid = true;
+        for (let i = 0; i < steps.length; i++) {
+            const stepFields = steps[i].querySelectorAll('input[required], select[required]');
+            let stepIsValid = true;
+            for (const field of stepFields) {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    stepIsValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            }
+            if (!stepIsValid) {
+                allStepsValid = false;
+            }
+        }
+
+        validatePasswords();
+        if (passwordField.classList.contains('is-invalid') || password2Field.classList.contains('is-invalid')) {
+            allStepsValid = false;
+        }
+
+        if (allStepsValid) {
+            form.submit();
+        } else {
+            showErrorStep();
+            // Adiciona um alerta para o usuário
+            alert('Por favor, corrija os erros no formulário antes de continuar.');
+        }
+    });
+});
+</script>
+{% endblock extra_js %}

@@ -1,0 +1,28 @@
+<div class="table-responsive">
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Placa do Veículo</th>
+                <th>Modelo do Veículo</th>
+                <th>Total Litros</th>
+                <th>Distância Total (KM)</th>
+                <th>Média de Consumo (KM/L)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in report_data %}
+            <tr>
+                <td>{{ item.veiculo__placa }}</td>
+                <td>{{ item.veiculo__modelo }}</td>
+                <td>{{ item.total_litros|floatformat:2 }}</td>
+                <td>{{ item.distancia_total|floatformat:2 }}</td>
+                <td>{{ item.media_consumo|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">Nenhum dado encontrado para este relatório.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

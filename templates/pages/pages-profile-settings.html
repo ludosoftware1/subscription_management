@@ -1,0 +1,221 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Configurações do Perfil{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-select-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        list-style: none;
+        padding: 0;
+    }
+    .current-avatar-container {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        cursor: pointer;
+    }
+    .current-avatar-container .profile-photo {
+        width: 100%;
+        height: 100%;
+    }
+    .current-avatar-container .edit-icon {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: var(--vz-primary);
+        color: white;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .avatar-select-list .avatar-select-item {
+        cursor: pointer;
+        border: 3px solid transparent;
+        border-radius: 50%;
+        transition: border-color 0.2s ease-in-out;
+    }
+    .avatar-select-list .avatar-select-item.selected {
+        border-color: var(--vz-primary);
+    }
+    .avatar-select-list .avatar-select-item img {
+        width: 80px;
+        height: 80px;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+
+            {% block pagetitle %}
+                {% include "partials/page-title.html" with pagetitle="Páginas" title="Configurações do Perfil" %}
+            {% endblock pagetitle %}
+
+            <div class="row">
+                <div class="col-lg-12">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title mb-0">Editar Perfil</h4>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" novalidate>
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="mb-4">
+                                            <h5 class="fs-15 mb-3">Avatar</h5>
+                                            {{ form.foto_perfil }}
+                                            <div class="current-avatar-container mb-3" id="current-avatar-wrapper">
+                                                <img src="{{ request.user.profile.get_foto_perfil_url }}" alt="Avatar Atual" class="rounded-circle profile-photo" id="current-avatar-img">
+                                                <div class="edit-icon">
+                                                    <i class="ri-pencil-fill"></i>
+                                                </div>
+                                            </div>
+
+                                            <ul class="avatar-select-list" id="avatar-list" style="display: none;">
+                                                {% for avatar_path in avatares %}
+                                                <li class="avatar-select-item" data-avatar-path="{{ avatar_path }}">
+                                                    <img src="{% static avatar_path %}" alt="Avatar" class="rounded-circle">
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            {{ form.first_name|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            {{ form.last_name|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            {{ form.email|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            {{ form.cpf|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            {{ form.data_nascimento|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            {{ form.telefone|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            {{ form.cep|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            {{ form.logradouro|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            {{ form.numero|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            {{ form.complemento|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            {{ form.bairro|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            {{ form.cidade|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            {{ form.uf|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12">
+                                        <div class="mb-3">
+                                            {{ form.descricao|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12">
+                                        <div class="hstack gap-2 justify-content-end">
+                                            <a href="{% url 'pages:pages.profile' %}" class="btn btn-light">Cancelar</a>
+                                            <button type="submit" class="btn btn-primary">Atualizar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarItems = document.querySelectorAll('.avatar-select-item');
+    const fotoPerfilInput = document.getElementById('id_foto_perfil');
+    const currentAvatarWrapper = document.getElementById('current-avatar-wrapper');
+    const currentAvatarImg = document.getElementById('current-avatar-img');
+    const avatarList = document.getElementById('avatar-list');
+
+    // Marcar o avatar atual como selecionado
+    const currentAvatarPath = fotoPerfilInput.value;
+    document.querySelector(`.avatar-select-item[data-avatar-path="${currentAvatarPath}"]`)?.classList.add('selected');
+
+    // Mostrar/Esconder a lista de avatares
+    currentAvatarWrapper.addEventListener('click', function() {
+        avatarList.style.display = avatarList.style.display === 'none' ? 'flex' : 'none';
+    });
+
+    // Lógica de seleção
+    avatarItems.forEach(item => {
+        item.addEventListener('click', function() {
+            avatarItems.forEach(i => i.classList.remove('selected'));
+            this.classList.add('selected');
+            const newAvatarPath = this.getAttribute('data-avatar-path');
+            fotoPerfilInput.value = newAvatarPath;
+            currentAvatarImg.src = "{% get_static_prefix %}" + newAvatarPath; // Atualiza a imagem principal
+        });
+    });
+});
+</script>
+{% endblock javascript %}

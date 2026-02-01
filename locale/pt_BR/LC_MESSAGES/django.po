@@ -1,0 +1,181 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-16 16:16-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+#: .\templates\account-1\email_confirm.html:5
+#: .\templates\account-1\email_confirm.html:17
+#: .\templates\account\email_confirm.html:5
+#: .\templates\account\email_confirm.html:14
+msgid "Confirm E-mail Address"
+msgstr ""
+
+#: .\templates\account-1\email_confirm.html:22
+#: .\templates\account\email_confirm.html:19
+#, python-format
+msgid ""
+"Please confirm that <a href=\"mailto:%(email)s\">%(email)s</a> is an e-mail "
+"address for user %(user_display)s."
+msgstr ""
+
+#: .\templates\account-1\email_confirm.html:26
+#: .\templates\account\email_confirm.html:23
+msgid "Confirm"
+msgstr ""
+
+#: .\templates\account-1\email_confirm.html:33
+#: .\templates\account\email_confirm.html:30
+#, python-format
+msgid ""
+"This e-mail confirmation link expired or is invalid. Please <a "
+"href=\"%(email_url)s\">issue a new e-mail confirmation request</a>."
+msgstr ""
+
+#: .\templates\account-1\logout.html:4 .\templates\account-1\logout.html:19
+#: .\templates\account-1\logout.html:26 .\templates\account\logout.html:4
+#: .\templates\account\logout.html:16 .\templates\account\logout.html:23
+msgid "Sign Out"
+msgstr ""
+
+#: .\templates\account-1\logout.html:20 .\templates\account\logout.html:17
+msgid "Are you sure you want to sign out?"
+msgstr ""
+
+#: .\templates\account-1\password_change.html:5
+#: .\templates\account-1\password_change.html:14
+#: .\templates\account-1\password_change.html:39
+#: .\templates\account-1\password_reset_from_key.html:5
+#: .\templates\account-1\password_reset_from_key.html:14
+#: .\templates\account-1\password_reset_from_key_done.html:4
+#: .\templates\account-1\password_reset_from_key_done.html:16
+#: .\templates\account\password_change.html:5
+#: .\templates\account\password_change.html:10
+#: .\templates\account\password_change.html:35
+#: .\templates\account\password_reset_from_key.html:5
+#: .\templates\account\password_reset_from_key.html:9
+#: .\templates\account\password_reset_from_key_done.html:4
+#: .\templates\account\password_reset_from_key_done.html:13
+msgid "Change Password"
+msgstr ""
+
+#: .\templates\account-1\password_reset.html:6
+#: .\templates\account-1\password_reset.html:15
+#: .\templates\account-1\password_reset_done.html:6
+#: .\templates\account-1\password_reset_done.html:18
+#: .\templates\account\password_reset.html:6
+msgid "Password Reset"
+msgstr ""
+
+#: .\templates\account-1\password_reset.html:30
+msgid ""
+"Forgotten your password? Enter your e-mail address below, and we'll send you "
+"an e-mail allowing you to reset it."
+msgstr ""
+
+#: .\templates\account-1\password_reset.html:55
+msgid "Please contact us if you have any trouble resetting your password."
+msgstr ""
+
+#: .\templates\account-1\password_reset_done.html:22
+msgid ""
+"We have sent you an e-mail. Please contact us if you do not receive it "
+"within a few minutes."
+msgstr ""
+
+#: .\templates\account-1\password_reset_from_key.html:14
+#: .\templates\account\password_reset_from_key.html:9
+msgid "Bad Token"
+msgstr ""
+
+#: .\templates\account-1\password_reset_from_key.html:19
+#: .\templates\account\password_reset_from_key.html:14
+#, python-format
+msgid ""
+"The password reset link was invalid, possibly because it has already been "
+"used.  Please request a <a href=\"%(passwd_reset_url)s\">new password reset</"
+"a>."
+msgstr ""
+
+#: .\templates\account-1\password_reset_from_key.html:41
+#: .\templates\account\password_reset_from_key.html:36
+msgid "change password"
+msgstr ""
+
+#: .\templates\account-1\password_reset_from_key.html:45
+#: .\templates\account-1\password_reset_from_key_done.html:22
+#: .\templates\account\password_reset_from_key.html:40
+#: .\templates\account\password_reset_from_key_done.html:19
+msgid "Your password is now changed."
+msgstr ""
+
+#: .\templates\account-1\password_set.html:5
+#: .\templates\account-1\password_set.html:14
+#: .\templates\account-1\password_set.html:36
+#: .\templates\account\password_set.html:5
+#: .\templates\account\password_set.html:10
+#: .\templates\account\password_set.html:32
+msgid "Set Password"
+msgstr ""
+
+#: .\templates\account-1\verification_sent.html:5
+#: .\templates\account-1\verification_sent.html:17
+#: .\templates\account\verification_sent.html:5
+#: .\templates\account\verification_sent.html:14
+msgid "Verify Your E-mail Address"
+msgstr ""
+
+#: .\templates\account-1\verification_sent.html:23
+#: .\templates\account\verification_sent.html:20
+msgid ""
+"We have sent an e-mail to you for verification. Follow the link provided to "
+"finalize the signup process. Please contact us if you do not receive it "
+"within a few minutes."
+msgstr ""
+
+#: .\templates\account\password_reset.html:10
+msgid "Redefinição de senha"
+msgstr ""
+
+#: .\templates\account\password_reset.html:26
+msgid ""
+"Esqueceu sua senha? Digite seu endereço de e-mail abaixo e enviaremos um e-"
+"mail permitindo que você o redefina."
+msgstr ""
+
+#: .\templates\account\password_reset.html:51
+msgid "Por favor entre em contato caso não receba dentro de alguns minutos."
+msgstr ""
+
+#: .\templates\account\password_reset_done.html:6
+#: .\templates\account\password_reset_done.html:15
+msgid "Resetar Senha"
+msgstr ""
+
+#: .\templates\account\password_reset_done.html:19
+msgid ""
+"Nós enviamos um e-mail para você. Por favor entre em contato caso não receba "
+"dentro de alguns minutos."
+msgstr ""
+
+
+#: ERRO DE USUÁRIO OU SENHA
+msgid "The username and/or password you specified are not correct."
+msgstr "O usuário ou a senha informados estão incorretos."
+
+#: ERRO DE E-MAIL OU SENHA
+msgid "The e-mail address and/or password you specified are not correct."
+msgstr "O e-mail ou a senha informados estão incorretos."

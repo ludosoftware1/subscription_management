@@ -1,0 +1,276 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}Configurações de E-mail{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .config-card {
+        border: 1px solid var(--vz-border-color);
+        border-radius: .5rem;
+        transition: box-shadow .15s ease-in-out;
+    }
+    .config-card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+    }
+    .test-result {
+        display: none;
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: .5rem;
+    }
+    .test-result.success {
+        background-color: #d1e7dd;
+        border: 1px solid #badbcc;
+        color: #0f5132;
+    }
+    .test-result.error {
+        background-color: #f8d7da;
+        border: 1px solid #f5c2c7;
+        color: #842029;
+    }
+    .password-toggle {
+        cursor: pointer;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+
+            {% include "partials/page-title.html" with pagetitle="Configurações" title="Configurações de E-mail" %}
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <!-- Alert de Informação -->
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="ri-information-line me-2 align-middle fs-16"></i>
+                        <strong>Importante:</strong> Configure os parâmetros SMTP do seu servidor de e-mail. Após salvar, você pode testar a conexão para verificar se está funcionando corretamente.
+                        <hr>
+                        <small>
+                            <strong>Dica:</strong> Consulte o <a href="https://github.com/ludosoftware1/eventos/blob/main/apps/configuracao/SMTP_CONFIG_HELP.md" target="_blank" class="alert-link">Guia de Configuração SMTP</a> para ver exemplos de configuração por provedor (Gmail, Outlook, Hostinger, etc.)
+                        </small>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+                    <form action="{% url 'configuracao:configuracao_email' %}" method="post" id="emailConfigForm">
+                        {% csrf_token %}
+
+                        <!-- Seção Servidor SMTP -->
+                        <div class="card config-card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="ri-mail-settings-line me-1 align-bottom"></i> 
+                                    Configurações do Servidor SMTP
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-lg-8">
+                                        <div class="mb-3">
+                                            <label for="{{ form.smtp_host.id_for_label }}" class="form-label">
+                                                {{ form.smtp_host.label }} <span class="text-danger">*</span>
+                                            </label>
+                                            {{ form.smtp_host }}
+                                            {% if form.smtp_host.help_text %}
+                                                <div class="form-text">{{ form.smtp_host.help_text }}</div>
+                                            {% endif %}
+                                            {% if form.smtp_host.errors %}
+                                                <div class="text-danger">{{ form.smtp_host.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <div class="mb-3">
+                                            <label for="{{ form.smtp_port.id_for_label }}" class="form-label">
+                                                {{ form.smtp_port.label }} <span class="text-danger">*</span>
+                                            </label>
+                                            {{ form.smtp_port }}
+                                            {% if form.smtp_port.help_text %}
+                                                <div class="form-text">{{ form.smtp_port.help_text }}</div>
+                                            {% endif %}
+                                            {% if form.smtp_port.errors %}
+                                                <div class="text-danger">{{ form.smtp_port.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.smtp_user.id_for_label }}" class="form-label">
+                                                {{ form.smtp_user.label }} <span class="text-danger">*</span>
+                                            </label>
+                                            {{ form.smtp_user }}
+                                            {% if form.smtp_user.help_text %}
+                                                <div class="form-text">{{ form.smtp_user.help_text }}</div>
+                                            {% endif %}
+                                            {% if form.smtp_user.errors %}
+                                                <div class="text-danger">{{ form.smtp_user.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.smtp_password.id_for_label }}" class="form-label">
+                                                {{ form.smtp_password.label }} <span class="text-danger">*</span>
+                                            </label>
+                                            <div class="input-group">
+                                                {{ form.smtp_password }}
+                                                <button class="btn btn-outline-secondary password-toggle" type="button" id="togglePassword">
+                                                    <i class="ri-eye-line" id="toggleIcon"></i>
+                                                </button>
+                                            </div>
+                                            {% if form.smtp_password.help_text %}
+                                                <div class="form-text">{{ form.smtp_password.help_text }}</div>
+                                            {% endif %}
+                                            {% if form.smtp_password.errors %}
+                                                <div class="text-danger">{{ form.smtp_password.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-lg-6">
+                                        <div class="form-check form-switch mb-3">
+                                            {{ form.use_tls }}
+                                            <label class="form-check-label" for="{{ form.use_tls.id_for_label }}">
+                                                {{ form.use_tls.label }}
+                                            </label>
+                                            {% if form.use_tls.help_text %}
+                                                <div class="form-text">{{ form.use_tls.help_text }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-check form-switch mb-3">
+                                            {{ form.use_ssl }}
+                                            <label class="form-check-label" for="{{ form.use_ssl.id_for_label }}">
+                                                {{ form.use_ssl.label }}
+                                            </label>
+                                            {% if form.use_ssl.help_text %}
+                                                <div class="form-text">{{ form.use_ssl.help_text }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-warning" role="alert">
+                                    <i class="ri-alert-line me-2"></i>
+                                    <strong>Nota:</strong> TLS (porta 587) e SSL (porta 465) são métodos de criptografia. Normalmente, use TLS para porta 587 ou SSL para porta 465. Não ative ambos simultaneamente.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões de Ação -->
+                        <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+                            <button type="button" class="btn btn-info" id="testSmtpBtn">
+                                <i class="ri-test-tube-line align-bottom me-1"></i> Testar Conexão SMTP
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ri-save-line align-bottom me-1"></i> Salvar Configurações
+                            </button>
+                        </div>
+
+                        <!-- Resultado do Teste -->
+                        <div id="testResult" class="test-result"></div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Toggle de visualização de senha
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('{{ form.smtp_password.id_for_label }}');
+    const toggleIcon = document.getElementById('toggleIcon');
+
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            if (type === 'text') {
+                toggleIcon.classList.remove('ri-eye-line');
+                toggleIcon.classList.add('ri-eye-off-line');
+            } else {
+                toggleIcon.classList.remove('ri-eye-off-line');
+                toggleIcon.classList.add('ri-eye-line');
+            }
+        });
+    }
+
+    // Teste de conexão SMTP
+    const testBtn = document.getElementById('testSmtpBtn');
+    const testResult = document.getElementById('testResult');
+
+    if (testBtn) {
+        testBtn.addEventListener('click', function () {
+            // Desabilita o botão e mostra loading
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Testando...';
+            
+            // Esconde resultado anterior
+            testResult.style.display = 'none';
+            testResult.classList.remove('success', 'error');
+
+            // Faz a requisição para testar SMTP
+            fetch("{% url 'configuracao:testar_conexao_smtp' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                testResult.style.display = 'block';
+                
+                if (data.success) {
+                    testResult.classList.add('success');
+                    testResult.innerHTML = '<i class="ri-checkbox-circle-line me-2 fs-18"></i>' + data.message;
+                } else {
+                    testResult.classList.add('error');
+                    testResult.innerHTML = '<i class="ri-error-warning-line me-2 fs-18"></i>' + data.message;
+                }
+            })
+            .catch(error => {
+                testResult.style.display = 'block';
+                testResult.classList.add('error');
+                testResult.innerHTML = '<i class="ri-error-warning-line me-2 fs-18"></i>Erro ao testar conexão: ' + error.message;
+            })
+            .finally(() => {
+                // Reabilita o botão
+                testBtn.disabled = false;
+                testBtn.innerHTML = '<i class="ri-test-tube-line align-bottom me-1"></i> Testar Conexão SMTP';
+            });
+        });
+    }
+
+    // Validação: alertar se TLS e SSL estiverem ativados simultaneamente
+    const tlsCheckbox = document.getElementById('{{ form.use_tls.id_for_label }}');
+    const sslCheckbox = document.getElementById('{{ form.use_ssl.id_for_label }}');
+
+    function checkEncryption() {
+        if (tlsCheckbox.checked && sslCheckbox.checked) {
+            alert('Atenção: Não é recomendado ativar TLS e SSL simultaneamente. Escolha apenas um método de criptografia.');
+        }
+    }
+
+    if (tlsCheckbox && sslCheckbox) {
+        tlsCheckbox.addEventListener('change', checkEncryption);
+        sslCheckbox.addEventListener('change', checkEncryption);
+    }
+});
+</script>
+{% endblock extra_js %}

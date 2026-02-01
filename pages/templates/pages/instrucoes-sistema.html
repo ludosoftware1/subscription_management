@@ -1,0 +1,795 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}Instruções do Sistema{% endblock title %}
+
+{% block extra_css %}
+<style>
+.instrucoes-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%);
+    color: white;
+    padding: 3rem 0;
+    margin: -1.5rem -1.5rem 2rem -1.5rem;
+}
+
+.instrucoes-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: white !important;
+}
+
+.instrucoes-header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Layout em duas colunas */
+.conteudo-instrucoes {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.coluna-sumario {
+    flex: 0 0 300px;
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
+}
+
+.coluna-conteudo {
+    flex: 1;
+}
+
+.card-sumario {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.sumario-header {
+    background: #1e3a8a;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem 0.5rem 0 0;
+    font-weight: 600;
+}
+
+.sumario-lista {
+    padding: 1rem 0;
+}
+
+.sumario-item {
+    list-style: none;
+    margin: 0;
+}
+
+.sumario-link {
+    display: block;
+    padding: 0.75rem 1.5rem;
+    color: #495057;
+    text-decoration: none;
+    border-bottom: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.sumario-link:hover,
+.sumario-link.active {
+    background: #1e3a8a;
+    color: white;
+    text-decoration: none;
+}
+
+.sumario-link i {
+    margin-right: 0.5rem;
+    width: 16px;
+    text-align: center;
+}
+
+.secao-instrucao {
+    margin-bottom: 3rem;
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    scroll-margin-top: 2rem;
+}
+
+.secao-instrucao:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
+}
+
+.secao-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.secao-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: white !important;
+}
+
+.secao-header .icone-secao {
+    font-size: 2rem;
+    margin-right: 1rem;
+    opacity: 0.9;
+}
+
+.secao-conteudo {
+    padding: 2rem;
+    background: #ffffff; /* Cor inicial neutra */
+}
+
+.passo-instrucao {
+    background: #f8f9fa; /* Cor inicial neutra */
+    border-left: 4px solid #1e3a8a;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.passo-instrucao h5 {
+    color: #1e3a8a; /* Cor inicial neutra */
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.passo-instrucao p {
+    color: #495057; /* Cor inicial neutra */
+    margin: 0;
+    line-height: 1.6;
+}
+
+.destaque-regra {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-left: 4px solid #0284c7;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0.25rem;
+}
+
+.destaque-regra h6 {
+    color: #0c4a6e;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+}
+
+.destaque-regra p {
+    color: #0c4a6e;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.alerta-importante {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-left: 4px solid #dc2626;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0.25rem;
+}
+
+.alerta-importante h6 {
+    color: #991b1b;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+}
+
+.alerta-importante p {
+    color: #991b1b;
+    margin: 0;
+    line-height: 1.6;
+}
+
+@media (max-width: 992px) {
+    .conteudo-instrucoes {
+        flex-direction: column;
+    }
+
+    .coluna-sumario {
+        position: static;
+        flex: none;
+        margin-bottom: 2rem;
+    }
+}
+
+/* Tema Escuro - Ajustes para Velzon */
+.dark .instrucoes-container,
+[data-bs-theme="dark"] .instrucoes-container,
+[data-layout-mode="dark"] .instrucoes-container,
+body[data-bs-theme="dark"] .instrucoes-container {
+    --modal-bg: #1a202c;
+    --modal-border: #2d3748;
+    --modal-text: #e2e8f0;
+    --modal-muted: #a0aec0;
+    --modal-primary: #63b3ed;
+}
+
+.dark .card-sumario,
+[data-bs-theme="dark"] .card-sumario,
+[data-layout-mode="dark"] .card-sumario,
+body[data-bs-theme="dark"] .card-sumario {
+    background: var(--modal-bg, #1a202c) !important;
+    border-color: var(--modal-border, #2d3748) !important;
+}
+
+.dark .sumario-header,
+[data-bs-theme="dark"] .sumario-header,
+[data-layout-mode="dark"] .sumario-header,
+body[data-bs-theme="dark"] .sumario-header {
+    background: var(--vz-primary, #0d6efd) !important;
+}
+
+.dark .sumario-link,
+[data-bs-theme="dark"] .sumario-link,
+[data-layout-mode="dark"] .sumario-link,
+body[data-bs-theme="dark"] .sumario-link {
+    color: var(--modal-text, #e2e8f0) !important;
+    border-color: var(--modal-border, #4a5568) !important;
+}
+
+.dark .sumario-link:hover,
+.dark .sumario-link.active,
+[data-bs-theme="dark"] .sumario-link:hover,
+[data-bs-theme="dark"] .sumario-link.active,
+[data-layout-mode="dark"] .sumario-link:hover,
+[data-layout-mode="dark"] .sumario-link.active,
+body[data-bs-theme="dark"] .sumario-link:hover,
+body[data-bs-theme="dark"] .sumario-link.active {
+    background: var(--vz-primary, #0d6efd) !important;
+    color: white !important;
+}
+
+.dark .secao-conteudo,
+[data-bs-theme="dark"] .secao-conteudo,
+[data-layout-mode="dark"] .secao-conteudo,
+body[data-bs-theme="dark"] .secao-conteudo {
+    background: var(--modal-bg, #1a202c) !important;
+    color: var(--modal-text, #e2e8f0) !important;
+}
+
+.dark .passo-instrucao,
+[data-bs-theme="dark"] .passo-instrucao,
+[data-layout-mode="dark"] .passo-instrucao,
+body[data-bs-theme="dark"] .passo-instrucao {
+    background: var(--modal-bg, #2d3748) !important;
+    border-left-color: var(--modal-primary, #63b3ed) !important;
+}
+
+.dark .passo-instrucao h5,
+[data-bs-theme="dark"] .passo-instrucao h5,
+[data-layout-mode="dark"] .passo-instrucao h5,
+body[data-bs-theme="dark"] .passo-instrucao h5 {
+    color: var(--modal-primary, #63b3ed) !important;
+}
+
+.dark .passo-instrucao p,
+[data-bs-theme="dark"] .passo-instrucao p,
+[data-layout-mode="dark"] .passo-instrucao p,
+body[data-bs-theme="dark"] .passo-instrucao p {
+    color: var(--modal-text, #e2e8f0) !important;
+}
+
+.dark .destaque-regra,
+[data-bs-theme="dark"] .destaque-regra,
+[data-layout-mode="dark"] .destaque-regra,
+body[data-bs-theme="dark"] .destaque-regra {
+    background: linear-gradient(135deg, #2d3748, #1a202c) !important;
+    border-color: #3182ce !important;
+}
+
+.dark .destaque-regra h6,
+.dark .destaque-regra p,
+[data-bs-theme="dark"] .destaque-regra h6,
+[data-bs-theme="dark"] .destaque-regra p,
+[data-layout-mode="dark"] .destaque-regra h6,
+[data-layout-mode="dark"] .destaque-regra p,
+body[data-bs-theme="dark"] .destaque-regra h6,
+body[data-bs-theme="dark"] .destaque-regra p {
+    color: #90cdf4 !important;
+}
+
+.dark .alerta-importante,
+[data-bs-theme="dark"] .alerta-importante,
+[data-layout-mode="dark"] .alerta-importante,
+body[data-bs-theme="dark"] .alerta-importante {
+    background: linear-gradient(135deg, #2d3748, #1a202c) !important;
+    border-color: #e53e3e !important;
+}
+
+.dark .alerta-importante h6,
+.dark .alerta-importante p,
+[data-bs-theme="dark"] .alerta-importante h6,
+[data-bs-theme="dark"] .alerta-importante p,
+[data-layout-mode="dark"] .alerta-importante h6,
+[data-layout-mode="dark"] .alerta-importante p,
+body[data-bs-theme="dark"] .alerta-importante h6,
+body[data-bs-theme="dark"] .alerta-importante p {
+    color: #fc8181 !important;
+}
+
+@media (max-width: 768px) {
+    .instrucoes-header {
+        padding: 2rem 1rem;
+    }
+
+    .instrucoes-header h1 {
+        font-size: 2rem;
+    }
+
+    .secao-conteudo {
+        padding: 1.5rem;
+    }
+
+    .sumario-link {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+
+            <!-- Header das Instruções -->
+            <div class="instrucoes-header text-center">
+                <div class="container">
+                    <h1><i class="ri-book-open-line me-3"></i>Instruções do Sistema</h1>
+                    <p>Guia completo para utilizar todas as funcionalidades do Sistema de Gestão de Frota</p>
+                </div>
+            </div>
+
+            <!-- Layout em duas colunas -->
+            <div class="conteudo-instrucoes container">
+
+                <!-- Coluna do Sumário -->
+                <div class="coluna-sumario">
+                    <div class="card-sumario">
+                        <div class="sumario-header">
+                            <i class="ri-list-check me-2"></i>Sumário
+                        </div>
+                        <ul class="sumario-lista">
+                            <li class="sumario-item">
+                                <a href="#cadastros-basicos" class="sumario-link">
+                                    <i class="ri-add-circle-line"></i>Cadastros Básicos
+                                </a>
+                            </li>
+                            <li class="sumario-item">
+                                <a href="#gestao-frota" class="sumario-link">
+                                    <i class="ri-settings-line"></i>Gestão de Frota
+                                </a>
+                            </li>
+                            <li class="sumario-item">
+                                <a href="#baixas-veiculos" class="sumario-link">
+                                    <i class="ri-delete-bin-line"></i>Baixas de Veículos
+                                </a>
+                            </li>
+                            <li class="sumario-item">
+                                <a href="#relatorios-exportacoes" class="sumario-link">
+                                    <i class="ri-file-chart-line"></i>Relatórios e Exportações
+                                </a>
+                            </li>
+                            <li class="sumario-item">
+                                <a href="#regras-sagres" class="sumario-link">
+                                    <i class="ri-file-text-line"></i>Regras do Sagres/TCE-PB
+                                </a>
+                            </li>
+                            <li class="sumario-item">
+                                <a href="#dicas-gerais" class="sumario-link">
+                                    <i class="ri-lightbulb-line"></i>Dicas Gerais
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Coluna do Conteúdo -->
+                <div class="coluna-conteudo">
+
+                    <!-- Seção: Cadastros Básicos -->
+                    <div id="cadastros-basicos" class="card secao-instrucao">
+                        <div class="secao-header">
+                            <h3><i class="ri-add-circle-line icone-secao"></i>Cadastros Básicos</h3>
+                        </div>
+                        <div class="secao-conteudo">
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-building-line me-2"></i>Estrutura Organizacional</h5>
+                                <p>Comece cadastrando as secretarias, unidades gestoras, condutores e postos de combustível. Estes são os elementos fundamentais para o funcionamento do sistema.</p>
+                            </div>
+
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-truck-line me-2"></i>Veículos e Máquinas</h5>
+                                <p>Cadastre todos os veículos e máquinas da frota, informando dados como placa, modelo, ano, proprietário/locador e outras informações relevantes.</p>
+                            </div>
+
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-user-line me-2"></i>Locadores e Prestadores</h5>
+                                <p>Registre todas as empresas e pessoas físicas que fornecem veículos ou serviços para a frota municipal.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção: Gestão de Frota -->
+                    <div id="gestao-frota" class="card secao-instrucao">
+                        <div class="secao-header">
+                            <h3><i class="ri-settings-line icone-secao"></i>Gestão de Frota</h3>
+                        </div>
+                        <div class="secao-conteudo">
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-file-list-line me-2"></i>Alteração de Proprietário/Locador</h5>
+                                <p>Para alterar o proprietário ou locador de um veículo/máquina, acesse o menu "Alterar Proprietário/Locador", selecione o item desejado e preencha o novo proprietário/locador.</p>
+                            </div>
+
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-gas-station-line me-2"></i>Abastecimentos</h5>
+                                <p>Registre todos os abastecimentos realizados nos veículos. Informe o posto, valor, quantidade de combustível e data do abastecimento.</p>
+                            </div>
+
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-tools-line me-2"></i>Manutenções</h5>
+                                <p>Cadastre manutenções preventivas e corretivas, incluindo peças trocadas, valores gastos e datas de execução.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção: Baixas de Veículos -->
+                    <div id="baixas-veiculos" class="card secao-instrucao">
+                        <div class="secao-header">
+                            <h3><i class="ri-delete-bin-line icone-secao"></i>Baixas de Veículos</h3>
+                        </div>
+                        <div class="secao-conteudo">
+                            <div class="alerta-importante">
+                                <h6><i class="ri-alert-line me-2"></i>Atenção!</h6>
+                                <p>A baixa de veículos é uma operação irreversível. Certifique-se de que realmente deseja dar baixa no veículo antes de confirmar.</p>
+                            </div>
+
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-search-line me-2"></i>Seleção do Veículo</h5>
+                                <p>Acesse "Dar Baixa em Veículos" e selecione o veículo desejado. O sistema só mostra veículos que não possuem manutenções em aberto.</p>
+                            </div>
+
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-file-text-line me-2"></i>Informações da Baixa</h5>
+                                <p>Preencha o motivo da baixa, data e outras informações relevantes. Após a baixa, o veículo não poderá mais ser usado no sistema.</p>
+                            </div>
+
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-history-line me-2"></i>Histórico de Baixas</h5>
+                                <p>Consulte todas as baixas realizadas através do menu "Histórico de Baixas" para auditoria e controle.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção: Relatórios e Exportações -->
+                    <div id="relatorios-exportacoes" class="card secao-instrucao">
+                        <div class="secao-header">
+                            <h3><i class="ri-file-chart-line icone-secao"></i>Relatórios e Exportações</h3>
+                        </div>
+                        <div class="secao-conteudo">
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-bar-chart-line me-2"></i>Relatórios do Sistema</h5>
+                                <p>Acesse o menu "Relatórios" para gerar diversos tipos de relatórios sobre a frota, manutenções, abastecimentos e custos.</p>
+                            </div>
+
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-download-line me-2"></i>Exportação TCE/Sagres</h5>
+                                <p>Para exportar dados no formato TCE/Sagres, acesse "Sagres" no menu lateral, selecione o tipo de arquivo, mês e ano desejados.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção: Regras do Sagres -->
+                    <div id="regras-sagres" class="card secao-instrucao">
+                        <div class="secao-header">
+                            <h3><i class="ri-file-text-line icone-secao"></i>Regras do Sagres/TCE-PB</h3>
+                        </div>
+                        <div class="secao-conteudo">
+                            <div class="destaque-regra">
+                                <h6><i class="ri-information-line me-2"></i>Proprietário da Frota</h6>
+                                <p>Arquivo contendo informações sobre os proprietários/locadores dos veículos. Deve ser exportado mensalmente para prestação de contas.</p>
+                            </div>
+
+                            <div class="destaque-regra">
+                                <h6><i class="ri-information-line me-2"></i>Veículos</h6>
+                                <p>Relação completa de todos os veículos da frota municipal, incluindo dados cadastrais, proprietários e status atual.</p>
+                            </div>
+
+                            <div class="destaque-regra">
+                                <h6><i class="ri-information-line me-2"></i>Situação da Frota</h6>
+                                <p>Informações sobre o status atual de cada veículo: ativo, baixado, em manutenção, etc.</p>
+                            </div>
+
+                            <div class="destaque-regra">
+                                <h6><i class="ri-information-line me-2"></i>Máquinas e Equipamentos</h6>
+                                <p>Relação de máquinas e equipamentos pesados da frota municipal.</p>
+                            </div>
+
+                            <div class="destaque-regra">
+                                <h6><i class="ri-information-line me-2"></i>Abastecimentos</h6>
+                                <p>Registro detalhado de todos os abastecimentos realizados, incluindo valores e quantidades.</p>
+                            </div>
+
+                            <div class="alerta-importante">
+                                <h6><i class="ri-time-line me-2"></i>Prazos de Exportação</h6>
+                                <p>As exportações TCE/Sagres devem ser realizadas mensalmente até o 5º dia útil do mês subsequente ao período de referência.</p>
+                            </div>
+
+                            <div class="destaque-regra">
+                                <h6><i class="ri-check-double-line me-2"></i>Validações do Sistema</h6>
+                                <p>O sistema automaticamente valida os dados antes da exportação, garantindo conformidade com as regras do TCE/PB.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção: Dicas Gerais -->
+                    <div id="dicas-gerais" class="card secao-instrucao">
+                        <div class="secao-header">
+                            <h3><i class="ri-lightbulb-line icone-secao"></i>Dicas Gerais</h3>
+                        </div>
+                        <div class="secao-conteudo">
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-shield-check-line me-2"></i>Manutenção de Dados</h5>
+                                <p>Mantenha sempre os dados atualizados. Informações desatualizadas podem comprometer relatórios e exportações.</p>
+                            </div>
+
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-search-line me-2"></i>Busca e Filtros</h5>
+                                <p>Utilize os recursos de busca e filtros disponíveis em todas as listagens para localizar rapidamente as informações desejadas.</p>
+                            </div>
+
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-history-line me-2"></i>Trilha de Auditoria</h5>
+                                <p>Todas as ações realizadas no sistema ficam registradas na trilha de auditoria, permitindo rastreamento completo das operações.</p>
+                            </div>
+
+                            <div class="passo-instrucao">
+                                <h5><i class="ri-customer-service-line me-2"></i>Suporte</h5>
+                                <p>Em caso de dúvidas ou problemas, consulte a documentação ou entre em contato com o suporte técnico.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+// Função para aplicar tema escuro/claro dinamicamente seguindo padrões do sistema
+function applyTheme() {
+    // Detecção mais robusta do tema escuro
+    const isDarkTheme = document.body.classList.contains('dark-theme') ||
+                       document.documentElement.classList.contains('dark-theme') ||
+                       document.body.classList.contains('layout-dark') ||
+                       document.documentElement.classList.contains('layout-dark') ||
+                       document.documentElement.getAttribute('data-bs-theme') === 'dark' ||
+                       document.body.classList.contains('dark') ||
+                       document.documentElement.classList.contains('dark') ||
+                       (window.getComputedStyle && window.getComputedStyle(document.documentElement).getPropertyValue('--bs-body-bg') && window.getComputedStyle(document.documentElement).getPropertyValue('--bs-body-bg').includes('#000')) ||
+                       (window.getComputedStyle && window.getComputedStyle(document.body).backgroundColor && window.getComputedStyle(document.body).backgroundColor.includes('rgb(0, 0, 0)'));
+
+    console.log('Tema escuro detectado:', isDarkTheme); // Debug
+
+    const secaoConteudos = document.querySelectorAll('.secao-conteudo');
+    const passoInstrucoes = document.querySelectorAll('.passo-instrucao');
+    const cardSumario = document.querySelector('.card-sumario');
+    const destaqueRegras = document.querySelectorAll('.destaque-regra');
+    const alertasImportantes = document.querySelectorAll('.alerta-importante');
+
+    if (isDarkTheme) {
+        console.log('Aplicando tema escuro'); // Debug
+
+        // Tema escuro - aplicação forçada com !important
+        secaoConteudos.forEach(el => {
+            el.style.setProperty('background-color', '#1a1a1a', 'important');
+            el.style.setProperty('color', '#ffffff', 'important');
+            el.classList.add('bg-dark', 'text-light');
+            el.classList.remove('bg-white', 'text-dark');
+        });
+
+        passoInstrucoes.forEach(el => {
+            el.style.setProperty('background-color', '#2d2d2d', 'important');
+            el.style.setProperty('color', '#ffffff', 'important');
+            el.classList.add('bg-secondary', 'text-light');
+            el.classList.remove('bg-light', 'text-dark');
+        });
+
+        passoInstrucoes.forEach(el => {
+            const h5 = el.querySelector('h5');
+            const p = el.querySelector('p');
+            if (h5) {
+                h5.style.setProperty('color', '#ffffff', 'important');
+                h5.classList.add('text-light');
+            }
+            if (p) {
+                p.style.setProperty('color', '#e0e0e0', 'important');
+                p.classList.add('text-light');
+            }
+        });
+
+        if (cardSumario) {
+            cardSumario.style.setProperty('background-color', '#2d2d2d', 'important');
+            cardSumario.style.setProperty('border-color', '#555555', 'important');
+            cardSumario.classList.add('bg-dark', 'border-secondary');
+            cardSumario.classList.remove('bg-light', 'border-light');
+        }
+
+        // Destaques e alertas mantêm suas cores originais para contraste
+        destaqueRegras.forEach(el => {
+            el.classList.add('border-info');
+        });
+
+        alertasImportantes.forEach(el => {
+            el.classList.add('border-danger');
+        });
+
+    } else {
+        console.log('Aplicando tema claro'); // Debug
+
+        // Tema claro - aplicação forçada com !important
+        secaoConteudos.forEach(el => {
+            el.style.setProperty('background-color', '#ffffff', 'important');
+            el.style.setProperty('color', '#212529', 'important');
+            el.classList.add('bg-white', 'text-dark');
+            el.classList.remove('bg-dark', 'text-light');
+        });
+
+        passoInstrucoes.forEach(el => {
+            el.style.setProperty('background-color', '#f8f9fa', 'important');
+            el.style.setProperty('color', '#212529', 'important');
+            el.classList.add('bg-light', 'text-dark');
+            el.classList.remove('bg-secondary', 'text-light');
+        });
+
+        passoInstrucoes.forEach(el => {
+            const h5 = el.querySelector('h5');
+            const p = el.querySelector('p');
+            if (h5) {
+                h5.style.setProperty('color', '#1e3a8a', 'important');
+                h5.classList.remove('text-light');
+            }
+            if (p) {
+                p.style.setProperty('color', '#495057', 'important');
+                p.classList.remove('text-light');
+            }
+        });
+
+        if (cardSumario) {
+            cardSumario.style.setProperty('background-color', '#f8f9fa', 'important');
+            cardSumario.style.setProperty('border-color', '#dee2e6', 'important');
+            cardSumario.classList.add('bg-light', 'border-light');
+            cardSumario.classList.remove('bg-dark', 'border-secondary');
+        }
+
+        // Remover classes de destaque
+        destaqueRegras.forEach(el => {
+            el.classList.remove('border-info');
+        });
+
+        alertasImportantes.forEach(el => {
+            el.classList.remove('border-danger');
+        });
+    }
+}
+
+// Funcionalidades da página de instruções
+document.addEventListener('DOMContentLoaded', function() {
+    // Aplicar tema inicial
+    applyTheme();
+
+    // Observar mudanças de tema
+    const themeObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'class') {
+                applyTheme();
+            }
+        });
+    });
+
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+    // Navegação suave do sumário
+    const sumarioLinks = document.querySelectorAll('.sumario-link');
+
+    sumarioLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+
+            if (targetElement) {
+                // Calcular offset dinamicamente
+                const isMobile = window.innerWidth < 992;
+                let offsetTop = targetElement.offsetTop;
+
+                if (isMobile) {
+                    // Em mobile, o sumário fica acima, então offset menor
+                    offsetTop -= 80;
+                } else {
+                    // Em desktop, compensar menu superior + espaço para sumário
+                    offsetTop -= 200;
+                }
+
+                window.scrollTo({
+                    top: Math.max(0, offsetTop),
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Highlight do item ativo no sumário baseado na posição de scroll
+    function updateActiveSumarioItem() {
+        const sections = document.querySelectorAll('.secao-instrucao');
+        const sumarioLinks = document.querySelectorAll('.sumario-link');
+
+        let currentSection = '';
+
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 100;
+            const sectionHeight = section.offsetHeight;
+            const scrollPosition = window.scrollY;
+
+            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                currentSection = section.id;
+            }
+        });
+
+        sumarioLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + currentSection) {
+                link.classList.add('active');
+            }
+        });
+    }
+
+    // Animações suaves para as seções quando entram na tela
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Aplicar animação inicial
+    document.querySelectorAll('.secao-instrucao').forEach(secao => {
+        secao.style.opacity = '0';
+        secao.style.transform = 'translateY(30px)';
+        secao.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(secao);
+    });
+
+    // Atualizar sumário ativo no scroll
+    window.addEventListener('scroll', updateActiveSumarioItem);
+    updateActiveSumarioItem(); // Chamada inicial
+});
+{% endblock extra_js %}

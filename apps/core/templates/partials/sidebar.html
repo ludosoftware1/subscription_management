@@ -1,0 +1,108 @@
+<!-- ========== App Menu ========== -->
+<div class="app-menu navbar-menu">
+    <!-- LOGO -->
+    <div class="navbar-brand-box">
+        <!-- Dark Logo-->
+        <a href="{% url 'home' %}" class="logo logo-dark">
+            <span class="logo-sm">
+                <img src="{% static 'images/logo-sm.png' %}" alt="" height="22">
+            </span>
+            <span class="logo-lg">
+                <img src="{% static 'images/logo-dark.png' %}" alt="" height="17">
+            </span>
+        </a>
+        <!-- Light Logo-->
+        <a href="{% url 'home' %}" class="logo logo-light">
+            <span class="logo-sm">
+                <img src="{% static 'images/logo-sm.png' %}" alt="" height="22">
+            </span>
+            <span class="logo-lg">
+                <img src="{% static 'images/logo-light.png' %}" alt="" height="17">
+            </span>
+        </a>
+        <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover"
+            id="vertical-hover">
+            <i class="ri-record-circle-line"></i>
+        </button>
+    </div>
+
+    <div id="scrollbar">
+        <div class="container-fluid">
+
+            <div id="two-column-menu">
+            </div>
+            <ul class="navbar-nav" id="navbar-nav">
+
+                <!-- =================================================================
+                MENU DO GESTOR (is_staff)
+                ================================================================== -->
+                <li class="menu-title"><span data-key="t-menu">Gestão</span></li>
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="{% url 'home' %}">
+                        <i class="ri-dashboard-2-line"></i> <span data-key="t-dashboards">Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarEstrutura" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarEstrutura">
+                        <i class="ri-building-line"></i> <span data-key="t-estrutura">Estrutura Organizacional</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarEstrutura">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{% url 'estrutura_organizacional:unidade_gestora' %}" class="nav-link"
+                                    data-key="t-unidade-gestora">Unidade Gestora</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'estrutura_organizacional:gerenciar_secretarias' %}" class="nav-link"
+                                    data-key="t-secretarias">Secretariassss</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'estrutura_organizacional:gerenciar_condutores' %}" class="nav-link"
+                                    data-key="t-condutores">Condutores</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'estrutura_organizacional:gerenciar_locadores_prestadores' %}" class="nav-link"
+                                    data-key="t-locadores">Locadores/Prestadores</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'estrutura_organizacional:gerenciar_postos_combustivel' %}" class="nav-link"
+                                    data-key="t-postos">Postos de Combustível</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="menu-title"><i class="ri-more-fill"></i></li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarConfig" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarConfig">
+                        <i class="ri-settings-3-line"></i> <span data-key="t-config">Administração</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarConfig">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{% url 'evento_interno:gerenciar_tipos_evento' %}" class="nav-link"
+                                    data-key="t-tipos-evento">Tipos de Evento</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'evento_interno:gerenciar_documentos_config' %}" class="nav-link"
+                                    data-key="t-config-docs">Config. Documentos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/admin/auth/user/" class="nav-link" data-key="t-usuarios">Usuários</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+            </ul>
+        </div>
+        <!-- Sidebar -->
+    </div>
+
+    <div class="sidebar-background"></div>
+</div>
+<!-- Left Sidebar End -->

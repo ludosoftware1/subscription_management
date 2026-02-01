@@ -1,0 +1,237 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}Configurações do Sistema{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .image-upload-box {
+        border: 2px dashed var(--vz-border-color);
+        border-radius: .5rem;
+        padding: 1.5rem;
+        text-align: center;
+        position: relative;
+        background-color: var(--vz-card-bg-custom);
+        transition: border-color .15s ease-in-out;
+    }
+    .image-upload-box:hover {
+        border-color: var(--vz-primary);
+    }
+    .image-upload-box .image-preview {
+        max-width: 100%;
+        max-height: 80px;
+        margin-bottom: 1rem;
+        border-radius: .3rem;
+        background-color: var(--vz-light);
+    }
+    .image-upload-box .image-preview.favicon-preview {
+        max-height: 32px;
+        max-width: 32px;
+        background-color: transparent;
+    }
+    .image-upload-box .image-preview.login-bg-preview {
+        max-height: 120px;
+    }
+    .image-upload-box .upload-placeholder {
+        font-size: 2.5rem;
+        color: var(--vz-gray-400);
+    }
+    .image-upload-box .btn-file-input {
+        cursor: pointer;
+    }
+    .image-upload-box input[type="file"] {
+        display: none;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+
+            {% include "partials/page-title.html" with pagetitle="Configurações" title="Configurações do Sistema" %}
+
+            <form action="{% url 'configuracao:configuracao_site' %}" method="post" enctype="multipart/form-data" id="configForm">
+                {% csrf_token %}
+
+                <!-- Seção Identidade Visual -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0"><i class="ri-palette-line me-1 align-bottom"></i> Identidade Visual</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <h5 class="fs-16">Logo Principal</h5>
+                                <p class="text-muted">Usada no topo e menu lateral. Fundo transparente (PNG) recomendado.</p>
+                                <div class="image-upload-box" data-input-id="id_logo_principal">
+                                    <input type="file" name="{{ form.logo_principal.name }}" id="id_logo_principal" accept="image/*">
+                                    {% if configuracao.logo_principal %}
+                                        <img src="{{ configuracao.logo_principal.url }}" alt="Logo Principal" class="image-preview">
+                                    {% else %}
+                                        <div class="upload-placeholder"><i class="ri-image-add-line"></i></div>
+                                        <p class="fs-15 text-muted mt-2">Nenhuma imagem selecionada</p>
+                                    {% endif %}
+                                    <p class="small text-muted mb-2">Dimensão recomendada: 100x22 pixels</p>
+                                    <div class="d-flex justify-content-center gap-2 mt-3">
+                                        <label for="id_logo_principal" class="btn btn-soft-primary btn-file-input">
+                                            <i class="ri-upload-2-line align-bottom me-1"></i>
+                                            {% if configuracao.logo_principal %}Alterar Imagem{% else %}Carregar Imagem{% endif %}
+                                        </label>
+                                        {% if configuracao.logo_principal %}
+                                            <a href="{% url 'configuracao:remover_imagem' 'logo_principal' %}" class="btn btn-soft-danger" onclick="return confirm('Deseja realmente remover esta imagem?');">
+                                                <i class="ri-delete-bin-line align-bottom me-1"></i>Remover
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <h5 class="fs-16">Favicon</h5>
+                                <p class="text-muted">Ícone exibido na aba do navegador. Formato .ico ou .png.</p>
+                                <div class="image-upload-box" data-input-id="id_favicon">
+                                    <input type="file" name="{{ form.favicon.name }}" id="id_favicon" accept="image/png, image/x-icon">
+                                    {% if configuracao.favicon %}
+                                        <img src="{{ configuracao.favicon.url }}" alt="Favicon" class="image-preview favicon-preview">
+                                    {% else %}
+                                        <div class="upload-placeholder"><i class="ri-image-add-line"></i></div>
+                                        <p class="fs-15 text-muted mt-2">Nenhum ícone selecionado</p>
+                                    {% endif %}
+                                    <p class="small text-muted mb-2">Dimensão recomendada: 32x32 pixels</p>
+                                    <div class="d-flex justify-content-center gap-2 mt-3">
+                                        <label for="id_favicon" class="btn btn-soft-primary btn-file-input">
+                                            <i class="ri-upload-2-line align-bottom me-1"></i>
+                                            {% if configuracao.favicon %}Alterar Ícone{% else %}Carregar Ícone{% endif %}
+                                        </label>
+                                        {% if configuracao.favicon %}
+                                            <a href="{% url 'configuracao:remover_imagem' 'favicon' %}" class="btn btn-soft-danger" onclick="return confirm('Deseja realmente remover este ícone?');">
+                                                <i class="ri-delete-bin-line align-bottom me-1"></i>Remover
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção Tela de Login -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0"><i class="ri-login-box-line me-1 align-bottom"></i> Tela de Login</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <h5 class="fs-16">Imagem de Fundo</h5>
+                                <p class="text-muted">Imagem exibida na área de destaque da tela de login.</p>
+                                <div class="image-upload-box" data-input-id="id_logo_login">
+                                    <input type="file" name="{{ form.logo_login.name }}" id="id_logo_login" accept="image/*">
+                                    {% if configuracao.logo_login %}
+                                        <img src="{{ configuracao.logo_login.url }}" alt="Imagem de Fundo" class="image-preview login-bg-preview">
+                                    {% else %}
+                                        <div class="upload-placeholder"><i class="ri-image-add-line"></i></div>
+                                        <p class="fs-15 text-muted mt-2">Nenhuma imagem selecionada</p>
+                                    {% endif %}
+                                    <p class="small text-muted mb-2">Dimensão recomendada: 1920x1080 pixels</p>
+                                    <div class="d-flex justify-content-center gap-2 mt-3">
+                                        <label for="id_logo_login" class="btn btn-soft-primary btn-file-input">
+                                            <i class="ri-upload-2-line align-bottom me-1"></i>
+                                            {% if configuracao.logo_login %}Alterar Imagem{% else %}Carregar Imagem{% endif %}
+                                        </label>
+                                        {% if configuracao.logo_login %}
+                                            <a href="{% url 'configuracao:remover_imagem' 'logo_login' %}" class="btn btn-soft-danger" onclick="return confirm('Deseja realmente remover esta imagem?');">
+                                                <i class="ri-delete-bin-line align-bottom me-1"></i>Remover
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <h5 class="fs-16">Textos da Tela de Login</h5>
+                                <p class="text-muted">Personalize as mensagens exibidas na tela de login.</p>
+                                <div class="mb-3">
+                                    <label for="{{ form.subtitulo_login.id_for_label }}" class="form-label">Subtítulo</label>
+                                    {{ form.subtitulo_login }}
+                                    <div class="form-text">Frase exibida abaixo da logo principal.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção Rodapé -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0"><i class="ri-file-text-line me-1 align-bottom"></i> Rodapé</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Defina os textos que aparecerão no rodapé de todas as páginas do sistema.</p>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.footer_text1.id_for_label }}" class="form-label">Linha 1 do Rodapé</label>
+                                    {{ form.footer_text1 }}
+                                    <div class="form-text">Ex: © {% now "Y" %} Nome da Prefeitura.</div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.footer_text2.id_for_label }}" class="form-label">Linha 2 do Rodapé</label>
+                                    {{ form.footer_text2 }}
+                                    <div class="form-text">Ex: Desenvolvido por Sua Empresa.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-end mb-4">
+                    <button type="submit" class="btn btn-primary"><i class="ri-save-line align-bottom me-1"></i> Salvar Alterações</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.image-upload-box').forEach(box => {
+        const inputId = box.dataset.inputId;
+        const input = document.getElementById(inputId);
+
+        if (!input) return;
+
+        input.addEventListener('change', function (e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    let img = box.querySelector('.image-preview');
+                    if (!img) {
+                        // Se não houver imagem, remove o placeholder e insere a tag img
+                        const placeholder = box.querySelector('.upload-placeholder');
+                        const textPlaceholder = box.querySelector('.fs-15');
+                        if (placeholder) placeholder.style.display = 'none';
+                        if (textPlaceholder) textPlaceholder.style.display = 'none';
+
+                        img = document.createElement('img');
+                        img.classList.add('image-preview');
+                        // Adiciona a classe específica de preview se necessário
+                        if (box.querySelector('.favicon-preview')) img.classList.add('favicon-preview');
+                        if (box.querySelector('.login-bg-preview')) img.classList.add('login-bg-preview');
+                        
+                        box.prepend(img);
+                    }
+                    img.src = event.target.result;
+                }
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+    });
+});
+</script>
+{% endblock extra_js %}

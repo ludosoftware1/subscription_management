@@ -1,0 +1,111 @@
+{% load static %}
+{% load auth_extras %}
+{% block sidebar %}
+<!-- ========== App Menu ========== -->
+<div class="app-menu navbar-menu">
+    <!-- LOGO -->
+    <div class="navbar-brand-box">
+        <!-- Dark Logo-->
+        <a href="{% if user|has_group:'administrador' %}{% url 'home' %}{% elif user|has_group:'gestor' or user|has_group:'analista' %}{% url 'home' %}{% else %}{% url 'home' %}{% endif %}"
+            class="logo logo-dark">
+            <span class="logo-sm">
+                <img src="{% if configuracao_site.logo_principal %}{{ configuracao_site.logo_principal.url }}{% else %}{% static 'images/logo-sm.png' %}{% endif %}"
+                    alt="" height="22">
+            </span>
+            <span class="logo-lg">
+                <img src="{% if configuracao_site.logo_principal %}{{ configuracao_site.logo_principal.url }}{% else %}{% static 'images/logo-dark.png' %}{% endif %}"
+                    alt="" height="50">
+            </span>
+        </a>
+        <!-- Light Logo-->
+        <a href="{% if user|has_group:'administrador' %}{% url 'home' %}{% elif user|has_group:'gestor' or user|has_group:'analista' %}{% url 'home' %}{% else %}{% url 'home' %}{% endif %}"
+            class="logo logo-light">
+            <span class="logo-sm">
+                <img src="{% if configuracao_site.logo_principal %}{{ configuracao_site.logo_principal.url }}{% else %}{% static 'images/logo-sm.png' %}{% endif %}"
+                    alt="" height="22">
+            </span>
+            <span class="logo-lg">
+                <img src="{% if configuracao_site.logo_principal %}{{ configuracao_site.logo_principal.url }}{% else %}{% static 'images/logo-light.png' %}{% endif %}"
+                    alt="" height="50">
+            </span>
+        </a>
+        <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover"
+            id="vertical-hover">
+            <i class="ri-record-circle-line"></i>
+        </button>
+    </div>
+
+    <div id="scrollbar">
+        <div class="container-fluid">
+
+            <div id="two-column-menu">
+            </div>
+            <ul class="navbar-nav" id="navbar-nav">
+
+                {% if user.is_authenticated %}
+                <li class="menu-title"><span data-key="t-menu">Principal</span></li>
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="{% url 'home' %}">
+                        <i class="ri-dashboard-line"></i> <span data-key="t-dashboard">Dashboard</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- =================================================================
+                MENU DO ADMINISTRADOR
+                ================================================================== -->
+                <li class="menu-title"><span data-key="t-menu">Administração</span></li>
+                <li class="nav-item">
+                    <a class="nav-link menu-link" data-bs-target="#sidebarConfig" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarConfig">
+                        <i class="ri-settings-3-line"></i> <span data-key="t-config">Configurações</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarConfig">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{% url 'configuracao:configuracao_site' %}" class="nav-link"
+                                    data-key="t-config-site">Configurações do Site</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'configuracao:configuracao_email' %}" class="nav-link"
+                                    data-key="t-config-email">Configurações de E-mail</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'email:test_email_page' %}" class="nav-link menu-link" data-key="t-test-email" title="Acompanhamento de E-mail">
+                        <i class="ri-mail-send-line"></i> <span data-key="t-test-email">Acompanhamento de E-mail</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'pages:audit_trail' %}" class="nav-link menu-link" data-key="t-audit-trail" title="Trilha de Auditoria">
+                        <i class="ri-history-line"></i> <span data-key="t-audit-trail">Trilha de Auditoria</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'configuracao:session_history' %}" class="nav-link menu-link" data-key="t-session-history" title="Histórico de Sessões">
+                        <i class="ri-time-line"></i> <span data-key="t-session-history">Histórico de Sessões</span>
+                    </a>
+                </li>
+
+                <!-- =================================================================
+                INSTRUÇÕES DO SISTEMA - ÚLTIMO ITEM DO MENU
+                ================================================================== -->
+                <li class="nav-item">
+                    <a href="{% url 'pages:instrucoes_sistema' %}" class="nav-link menu-link" data-key="t-instrucoes-sistema" title="Instruções do Sistema">
+                        <i class="ri-book-open-line"></i> <span data-key="t-instrucoes-sistema">Instruções do Sistema</span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+        <!-- Sidebar -->
+    </div>
+
+    <div class="sidebar-background"></div>
+</div>
+<!-- Left Sidebar End -->
+<!-- Vertical Overlay-->
+<div class="vertical-overlay"></div>
+{% endblock sidebar %}

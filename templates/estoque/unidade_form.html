@@ -1,0 +1,208 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}{% if object %}Editar{% else %}Nova{% endif %} Unidade de Medida{% endblock title %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            <!-- Page Title -->
+            <div class="row mb-3 pb-1">
+                <div class="col-12">
+                    <div class="d-flex align-items-lg-center flex-lg-row flex-column">
+                        <div class="flex-grow-1">
+                            <h4 class="fs-16 mb-1">
+                                {% if object %}Editar Unidade de Medida{% else %}Nova Unidade de Medida{% endif %}
+                            </h4>
+                            <p class="text-muted mb-0">
+                                {% if object %}Edite as informações da unidade de medida{% else %}Preencha as informações para criar uma nova unidade de medida{% endif %}
+                            </p>
+                        </div>
+                        <div class="mt-3 mt-lg-0">
+                            <a href="{% url 'estoque:unidade_list' %}" class="btn btn-outline-secondary">
+                                <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Informações da Unidade de Medida</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" novalidate>
+                                {% csrf_token %}
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.nome.id_for_label }}" class="form-label">
+                                                Nome da Unidade <span class="text-danger">*</span>
+                                            </label>
+                                            {{ form.nome }}
+                                            {% if form.nome.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {{ form.nome.errors.0 }}
+                                                </div>
+                                            {% endif %}
+                                            <div class="form-text">Ex: Quilograma, Litro, Unidade</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.sigla.id_for_label }}" class="form-label">
+                                                Sigla <span class="text-danger">*</span>
+                                            </label>
+                                            {{ form.sigla }}
+                                            {% if form.sigla.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {{ form.sigla.errors.0 }}
+                                                </div>
+                                            {% endif %}
+                                            <div class="form-text">Ex: kg, L, m, un (máximo 10 caracteres)</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <label for="{{ form.descricao.id_for_label }}" class="form-label">Descrição</label>
+                                            {{ form.descricao }}
+                                            {% if form.descricao.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {{ form.descricao.errors.0 }}
+                                                </div>
+                                            {% endif %}
+                                            <div class="form-text">Descrição opcional da unidade de medida</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="{{ form.ativo.id_for_label }}" class="form-label">Status</label>
+                                            <div class="form-check form-switch">
+                                                {{ form.ativo }}
+                                                <label class="form-check-label" for="{{ form.ativo.id_for_label }}">
+                                                    {% if form.ativo.value %}Ativa{% else %}Inativa{% endif %}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="ri-save-line align-middle me-1"></i>
+                                        {% if object %}Salvar Alterações{% else %}Criar Unidade{% endif %}
+                                    </button>
+                                    <a href="{% url 'estoque:unidade_list' %}" class="btn btn-outline-secondary">
+                                        Cancelar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Panel -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Dicas</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading">Padronização</h6>
+                                <p class="mb-0">Use siglas padronizadas para facilitar a identificação.</p>
+                            </div>
+                            <div class="alert alert-warning">
+                                <h6 class="alert-heading">Sigla única</h6>
+                                <p class="mb-0">Cada sigla deve ser única no sistema.</p>
+                            </div>
+                            <div class="alert alert-success">
+                                <h6 class="alert-heading">Uso</h6>
+                                <p class="mb-0">Unidades inativas não aparecem na seleção de produtos.</p>
+                            </div>
+                            <div class="alert alert-danger">
+                                <h6 class="alert-heading">Produtos</h6>
+                                <p class="mb-0">Não é possível excluir unidades que estão sendo usadas por produtos.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Examples Card -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">Exemplos de Unidades</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td><code>un</code></td>
+                                            <td>Unidade</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>kg</code></td>
+                                            <td>Quilograma</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>g</code></td>
+                                            <td>Grama</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>L</code></td>
+                                            <td>Litro</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>ml</code></td>
+                                            <td>Mililitro</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>m</code></td>
+                                            <td>Metro</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>cm</code></td>
+                                            <td>Centímetro</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>cx</code></td>
+                                            <td>Caixa</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>pct</code></td>
+                                            <td>Pacote</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include "partials/footer.html" %}
+</div>
+
+<style>
+.form-check-input:checked {
+    background-color: #0ab39c;
+    border-color: #0ab39c;
+}
+
+code {
+    background-color: #f8f9fa;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+</style>
+{% endblock content %}

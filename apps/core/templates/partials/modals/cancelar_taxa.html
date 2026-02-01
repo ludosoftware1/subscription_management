@@ -1,0 +1,20 @@
+<!-- Modal Genérico de Cancelar Taxa -->
+<div class="modal fade" id="cancelarTaxaModal_{{ taxa.pk }}" tabindex="-1" aria-labelledby="cancelarTaxaModalLabel_{{ taxa.pk }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title" id="cancelarTaxaModalLabel_{{ taxa.pk }}">Cancelar Taxa</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-4"><i class="ri-close-circle-line text-danger display-4"></i></div>
+                <h4>Cancelar Taxa?</h4>
+                <p class="text-muted">Você tem certeza que deseja cancelar a taxa <strong>"{{ taxa.nome_taxa }}"</strong>? Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-light w-sm" data-bs-dismiss="modal">Voltar</button>
+                <form action="{{ url_cancelar }}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger w-sm">Sim, Cancelar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

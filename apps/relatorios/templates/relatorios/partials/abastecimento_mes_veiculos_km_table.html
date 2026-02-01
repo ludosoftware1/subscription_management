@@ -1,0 +1,36 @@
+<div class="table-responsive">
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Veículo (Placa)</th>
+                <th>KM Inicial</th>
+                <th>KM Final</th>
+                <th>Litros Abastecidos</th>
+                <th>Valor Unitário (R$/L)</th>
+                <th>Valor Total (R$)</th>
+                <th>Data Abastecimento</th>
+                <th>Posto</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in report_data %}
+            {% with veiculo=item.item_abastecido %}
+            <tr>
+                <td>{{ veiculo.placa }} - {{ veiculo.modelo_veiculo.descricao_marca }} {{ veiculo.modelo_veiculo.descricao_modelo }}</td>
+                <td>{{ item.quilometragem_anterior|floatformat:0 }}</td>
+                <td>{{ item.quilometragem_atual|floatformat:0 }}</td>
+                <td>{{ item.litros|floatformat:2 }}</td>
+                <td>R$ {{ item.valor_litro|floatformat:2 }}</td>
+                <td>R$ {{ item.valor_abastecido|floatformat:2 }}</td>
+                <td>{{ item.data_abastecimento|date:"d/m/Y" }}</td>
+                <td>{{ item.posto_combustivel.nome_posto|default:"N/A" }}</td>
+            </tr>
+            {% endwith %}
+            {% empty %}
+            <tr>
+                <td colspan="8">Nenhum abastecimento encontrado para o período selecionado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
