@@ -33,4 +33,4 @@ class MyAccountAdapter(DefaultAccountAdapter):
         """
         Redireciona o usuário para a página inicial após o login.
         """
-        return '/'
+        return reverse('tenants:list')
