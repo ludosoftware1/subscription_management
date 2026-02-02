@@ -180,7 +180,7 @@
                 .then(function (data) {
                     if (data && typeof data.amount !== "undefined") {
                         const amountInput = document.getElementById("id_amount");
-                        if (amountInput && !amountInput.value) {
+                        if (amountInput) {
                             amountInput.value = data.amount;
                         }
                     }
