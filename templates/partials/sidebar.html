@@ -61,6 +61,11 @@
                         <i class="ri-add-circle-line"></i> <span data-key="t-tenant-new">Novo Tenant</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="{% url 'tenants:payments-list' %}">
+                        <i class="ri-bank-card-line"></i> <span data-key="t-tenant-payments">Pagamentos</span>
+                    </a>
+                </li>
                 {% endif %}
 
                 <li class="menu-title"><span data-key="t-menu">Administração</span></li>

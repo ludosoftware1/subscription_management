@@ -165,31 +165,85 @@ class TenantPaymentListView(LoginRequiredMixin, View):
     template_name = "tenants/payment_list.html"
 
     def get(self, request):
+        client = SaasApiClient()
+        tenant_choices = []
+        try:
+            tenants = client.list_tenants()
+            tenant_choices = [
+                (t.get("schema_name"), f'{t.get("client_name")} ({t.get("schema_name")})')
+                for t in tenants
+                if t.get("schema_name")
+            ]
+        except SaasApiError as exc:
+            messages.error(request, str(exc))
         payment_id = request.GET.get("id")
         editing_payment = None
         if payment_id:
             editing_payment = get_object_or_404(TenantPayment, pk=payment_id)
-            form = TenantPaymentForm(instance=editing_payment)
+            form = TenantPaymentForm(
+                instance=editing_payment,
+                tenant_choices=tenant_choices,
+                initial={
+                    "schema_name": editing_payment.schema_name,
+                },
+            )
         else:
-            form = TenantPaymentForm()
+            form = TenantPaymentForm(tenant_choices=tenant_choices)
         payments = TenantPayment.objects.all()
         context = {
             "form": form,
             "payments": payments,
             "editing_payment": editing_payment,
+            "tenant_choices": tenant_choices,
         }
         return render(request, self.template_name, context)
 
     def post(self, request):
+        client = SaasApiClient()
+        tenant_choices = []
+        try:
+            tenants = client.list_tenants()
+            tenant_choices = [
+                (t.get("schema_name"), f'{t.get("client_name")} ({t.get("schema_name")})')
+                for t in tenants
+                if t.get("schema_name")
+            ]
+        except SaasApiError as exc:
+            messages.error(request, str(exc))
         payment_id = request.POST.get("id")
         editing_payment = None
         if payment_id:
             editing_payment = get_object_or_404(TenantPayment, pk=payment_id)
-            form = TenantPaymentForm(request.POST, request.FILES, instance=editing_payment)
+            form = TenantPaymentForm(
+                request.POST,
+                request.FILES,
+                instance=editing_payment,
+                tenant_choices=tenant_choices,
+            )
         else:
-            form = TenantPaymentForm(request.POST, request.FILES)
+            form = TenantPaymentForm(
+                request.POST,
+                request.FILES,
+                tenant_choices=tenant_choices,
+            )
         if form.is_valid():
-            payment = form.save()
+            schema_name = form.cleaned_data.get("schema_name")
+            client_name = ""
+            if schema_name:
+                try:
+                    tenant = client.retrieve_tenant(schema_name)
+                    if isinstance(tenant, dict):
+                        client_name = tenant.get("client_name") or ""
+                except SaasApiError as exc:
+                    messages.error(request, str(exc))
+            payment = form.save(commit=False)
+            if schema_name:
+                payment.schema_name = schema_name
+            if client_name and not payment.client_name:
+                payment.client_name = client_name
+            if not payment.currency:
+                payment.currency = "BRL"
+            payment.save()
             if payment_id:
                 messages.success(request, "Pagamento atualizado com sucesso.")
             else:
@@ -200,5 +254,6 @@ class TenantPaymentListView(LoginRequiredMixin, View):
             "form": form,
             "payments": payments,
             "editing_payment": editing_payment,
+            "tenant_choices": tenant_choices,
         }
         return render(request, self.template_name, context)

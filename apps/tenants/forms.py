@@ -1,3 +1,5 @@
+from datetime import date
+
 from django import forms
 
 from .models import TenantPayment
@@ -52,6 +54,11 @@ class TenantForm(forms.Form):
 
 
 class TenantPaymentForm(forms.ModelForm):
+    schema_name = forms.ChoiceField(
+        label="Cliente",
+        required=False,
+    )
+
     class Meta:
         model = TenantPayment
         fields = [
@@ -71,12 +78,7 @@ class TenantPaymentForm(forms.ModelForm):
                     "min": "0",
                 },
             ),
-            "currency": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "maxlength": "10",
-                },
-            ),
+            "currency": forms.HiddenInput(),
             "status": forms.Select(
                 attrs={
                     "class": "form-select",
@@ -105,3 +107,13 @@ class TenantPaymentForm(forms.ModelForm):
                 },
             ),
         }
+
+    def __init__(self, *args, tenant_choices=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        choices = tenant_choices or []
+        self.fields["schema_name"].choices = choices
+        if not self.instance.pk:
+            if "payment_date" not in self.initial:
+                self.initial["payment_date"] = date.today()
+            if "currency" not in self.initial:
+                self.initial["currency"] = "BRL"
