@@ -22,7 +22,7 @@
                             <a href="{% url 'tenants:update' schema_name %}" class="btn btn-soft-primary">
                                 <i class="ri-edit-line align-middle me-1"></i> Editar cliente
                             </a>
-                            <a href="{% url 'tenants:payment' schema_name %}" class="btn btn-soft-success">
+                            <a href="{% url 'tenants:payments-create' %}" class="btn btn-soft-success">
                                 <i class="ri-bank-card-line align-middle me-1"></i> Registrar pagamento
                             </a>
                         </div>
@@ -148,4 +148,3 @@
     {% include "partials/footer.html" %}
 </div>
 {% endblock content %}
-
