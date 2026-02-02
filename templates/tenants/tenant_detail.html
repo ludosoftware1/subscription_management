@@ -1,6 +1,6 @@
 {% extends "partials/base.html" %}
 {% load static %}
-{% block title %}Pagamentos de tenants{% endblock title %}
+{% block title %}Detalhes do cliente{% endblock title %}
 
 {% block content %}
 <div class="main-content">
@@ -10,17 +10,20 @@
                 <div class="col-12">
                     <div class="d-flex align-items-lg-center flex-lg-row flex-column">
                         <div class="flex-grow-1">
-                            <h4 class="fs-16 mb-1">Pagamentos de clientes</h4>
+                            <h4 class="fs-16 mb-1">Detalhes do cliente</h4>
                             <p class="text-muted mb-0">
-                                Lista de todos os pagamentos registrados na base interna.
+                                Visualize os dados do cliente e os pagamentos registrados na base interna.
                             </p>
                         </div>
                         <div class="mt-3 mt-lg-0 d-flex gap-2">
-                            <a href="{% url 'tenants:payments-create' %}" class="btn btn-primary">
-                                <i class="ri-add-circle-line align-middle me-1"></i> Novo pagamento
-                            </a>
                             <a href="{% url 'tenants:list' %}" class="btn btn-outline-secondary">
                                 <i class="ri-arrow-left-line align-middle me-1"></i> Voltar para clientes
+                            </a>
+                            <a href="{% url 'tenants:update' schema_name %}" class="btn btn-soft-primary">
+                                <i class="ri-edit-line align-middle me-1"></i> Editar cliente
+                            </a>
+                            <a href="{% url 'tenants:payment' schema_name %}" class="btn btn-soft-success">
+                                <i class="ri-bank-card-line align-middle me-1"></i> Registrar pagamento
                             </a>
                         </div>
                     </div>
@@ -40,56 +43,49 @@
             </div>
             {% endif %}
 
-            <div class="row mb-3">
-                <div class="col-12">
+            <div class="row">
+                <div class="col-lg-4">
                     <div class="card">
                         <div class="card-header">
-                            <h5 class="card-title mb-0">Filtrar pagamentos</h5>
+                            <h5 class="card-title mb-0">Dados do cliente</h5>
                         </div>
                         <div class="card-body">
-                            <form method="get" class="row g-3">
-                                <div class="col-md-4">
-                                    <label for="filter_schema_name" class="form-label">Cliente</label>
-                                    <select class="form-select" id="filter_schema_name" name="schema_name">
-                                        <option value="">Todos</option>
-                                        {% for value, label in tenant_choices %}
-                                        <option value="{{ value }}"{% if filter_schema_name == value %} selected{% endif %}>{{ label }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="filter_start_date" class="form-label">Data inicial</label>
-                                    <input
-                                        type="date"
-                                        class="form-control"
-                                        id="filter_start_date"
-                                        name="start_date"
-                                        value="{{ filter_start_date|default_if_none:'' }}"
-                                    >
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="filter_end_date" class="form-label">Data final</label>
-                                    <input
-                                        type="date"
-                                        class="form-control"
-                                        id="filter_end_date"
-                                        name="end_date"
-                                        value="{{ filter_end_date|default_if_none:'' }}"
-                                    >
-                                </div>
-                                <div class="col-md-2 d-flex align-items-end">
-                                    <button type="submit" class="btn btn-primary w-100">
-                                        Aplicar filtros
-                                    </button>
-                                </div>
-                            </form>
+                            {% if tenant %}
+                            <dl class="row mb-0">
+                                <dt class="col-sm-5">Schema</dt>
+                                <dd class="col-sm-7">{{ tenant.schema_name }}</dd>
+
+                                <dt class="col-sm-5">Nome</dt>
+                                <dd class="col-sm-7">{{ tenant.client_name }}</dd>
+
+                                <dt class="col-sm-5">Domínio</dt>
+                                <dd class="col-sm-7">{{ tenant.primary_domain|default:"-" }}</dd>
+
+                                <dt class="col-sm-5">Pago até</dt>
+                                <dd class="col-sm-7">
+                                    {% if tenant.paid_until %}
+                                        {{ tenant.paid_until }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </dd>
+
+                                <dt class="col-sm-5">Licenças</dt>
+                                <dd class="col-sm-7">
+                                    {{ tenant.manager_licenses|default:"-" }} / {{ tenant.staff_licenses|default:"-" }}
+                                </dd>
+
+                                <dt class="col-sm-5">Storage (GB)</dt>
+                                <dd class="col-sm-7">{{ tenant.storage_gb|default:"-" }}</dd>
+                            </dl>
+                            {% else %}
+                            <p class="text-muted mb-0">Não foi possível carregar os dados do cliente.</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-12">
+                <div class="col-lg-8">
                     <div class="card">
                         <div class="card-header">
                             <h5 class="card-title mb-0">Pagamentos registrados</h5>
@@ -101,8 +97,6 @@
                                     <thead class="text-muted table-light">
                                         <tr>
                                             <th>Data</th>
-                                            <th>Tenant</th>
-                                            <th>Cliente</th>
                                             <th>Valor</th>
                                             <th>Status</th>
                                             <th>Referência</th>
@@ -114,8 +108,6 @@
                                         {% for payment in payments %}
                                         <tr>
                                             <td>{{ payment.payment_date }}</td>
-                                            <td>{{ payment.schema_name }}</td>
-                                            <td>{{ payment.client_name|default:"-" }}</td>
                                             <td>{{ payment.amount }} {{ payment.currency }}</td>
                                             <td>{{ payment.get_status_display }}</td>
                                             <td>{{ payment.reference|default:"-" }}</td>
@@ -132,7 +124,7 @@
                                                 <a href="{% url 'tenants:payments-edit' payment.id %}" class="btn btn-sm btn-soft-primary">
                                                     <i class="ri-edit-line align-middle"></i>
                                                 </a>
-                                                <form method="post" action="{% url 'tenants:payments-delete' payment.id %}">
+                                                <form method="post" action="{% url 'tenants:payments-delete' payment.id %}" style="display:inline;">
                                                     {% csrf_token %}
                                                     <button type="submit" class="btn btn-sm btn-soft-danger" onclick="return confirm('Confirma a exclusão deste pagamento?');">
                                                         <i class="ri-delete-bin-line align-middle"></i>
@@ -145,9 +137,7 @@
                                 </table>
                             </div>
                             {% else %}
-                            <p class="text-muted mb-0">
-                                Nenhum pagamento registrado ainda.
-                            </p>
+                            <p class="text-muted mb-0">Nenhum pagamento registrado para este cliente.</p>
                             {% endif %}
                         </div>
                     </div>
@@ -158,3 +148,4 @@
     {% include "partials/footer.html" %}
 </div>
 {% endblock content %}
+
