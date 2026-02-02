@@ -47,58 +47,68 @@
                             <form method="post" enctype="multipart/form-data" novalidate>
                                 {% csrf_token %}
 
-                                <div class="mb-3">
-                                    <label for="{{ form.schema_name.id_for_label }}" class="form-label">
-                                        Cliente
-                                    </label>
-                                    {{ form.schema_name }}
-                                    {% if form.schema_name.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.schema_name.errors.0 }}
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.schema_name.id_for_label }}" class="form-label">
+                                                Cliente
+                                            </label>
+                                            {{ form.schema_name }}
+                                            {% if form.schema_name.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.schema_name.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
                                     </div>
-                                    {% endif %}
-                                </div>
 
-                                <div class="mb-3">
-                                    <label for="{{ form.amount.id_for_label }}" class="form-label">
-                                        Valor
-                                    </label>
-                                    {{ form.amount }}
-                                    {% if form.amount.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.amount.errors.0 }}
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.amount.id_for_label }}" class="form-label">
+                                                Valor
+                                            </label>
+                                            {{ form.amount }}
+                                            {% if form.amount.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.amount.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
                                     </div>
-                                    {% endif %}
+
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.payment_date.id_for_label }}" class="form-label">
+                                                Data do pagamento
+                                            </label>
+                                            {{ form.payment_date }}
+                                            {% if form.payment_date.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.payment_date.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.status.id_for_label }}" class="form-label">
+                                                Status
+                                            </label>
+                                            {{ form.status }}
+                                            {% if form.status.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.status.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {{ form.currency }}
 
                                 <div class="mb-3">
-                                    <label for="{{ form.payment_date.id_for_label }}" class="form-label">
-                                        Data do pagamento
-                                    </label>
-                                    {{ form.payment_date }}
-                                    {% if form.payment_date.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.payment_date.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="{{ form.status.id_for_label }}" class="form-label">
-                                        Status
-                                    </label>
-                                    {{ form.status }}
-                                    {% if form.status.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.status.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for "{{ form.reference.id_for_label }}" class="form-label">
+                                    <label for="{{ form.reference.id_for_label }}" class="form-label">
                                         Referência
                                     </label>
                                     {{ form.reference }}
@@ -148,5 +158,35 @@
     </div>
     {% include "partials/footer.html" %}
 </div>
+<script>
+    const clientSelect = document.getElementById("id_schema_name");
+    if (clientSelect) {
+        clientSelect.addEventListener("change", function () {
+            const schemaName = this.value;
+            if (!schemaName) {
+                return;
+            }
+            const url = "{% url 'tenants:payments-create' %}";
+            const params = new URLSearchParams();
+            params.set("schema_name", schemaName);
+            fetch(url + "?" + params.toString(), {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data && typeof data.amount !== "undefined") {
+                        const amountInput = document.getElementById("id_amount");
+                        if (amountInput && !amountInput.value) {
+                            amountInput.value = data.amount;
+                        }
+                    }
+                })
+                .catch(function () {});
+        });
+    }
+</script>
 {% endblock content %}
-

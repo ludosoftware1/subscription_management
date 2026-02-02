@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import View
@@ -177,9 +178,21 @@ class TenantPaymentListView(LoginRequiredMixin, View):
         except SaasApiError as exc:
             messages.error(request, str(exc))
         payments = TenantPayment.objects.all()
+        filter_schema_name = request.GET.get("schema_name") or ""
+        filter_start_date = request.GET.get("start_date") or ""
+        filter_end_date = request.GET.get("end_date") or ""
+        if filter_schema_name:
+            payments = payments.filter(schema_name=filter_schema_name)
+        if filter_start_date:
+            payments = payments.filter(payment_date__gte=filter_start_date)
+        if filter_end_date:
+            payments = payments.filter(payment_date__lte=filter_end_date)
         context = {
             "payments": payments,
             "tenant_choices": tenant_choices,
+            "filter_schema_name": filter_schema_name,
+            "filter_start_date": filter_start_date,
+            "filter_end_date": filter_end_date,
         }
         return render(request, self.template_name, context)
 
@@ -241,6 +254,15 @@ class TenantPaymentCreateView(LoginRequiredMixin, FormView):
     template_name = "tenants/payment_form.html"
     form_class = TenantPaymentForm
 
+    def get(self, request, *args, **kwargs):
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            schema_name = request.GET.get("schema_name") or ""
+            if not schema_name:
+                return JsonResponse({"amount": ""})
+            amount = self.get_monthly_amount(schema_name)
+            return JsonResponse({"amount": amount or ""})
+        return super().get(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse("tenants:payments-list")
 
@@ -259,6 +281,21 @@ class TenantPaymentCreateView(LoginRequiredMixin, FormView):
             messages.error(self.request, str(exc))
         kwargs["tenant_choices"] = tenant_choices
         return kwargs
+
+    def get_monthly_amount(self, schema_name: str):
+        client = SaasApiClient()
+        try:
+            tenant = client.retrieve_tenant(schema_name)
+        except SaasApiError as exc:
+            messages.error(self.request, str(exc))
+            return None
+        if not isinstance(tenant, dict):
+            return None
+        for key in ("monthly_price", "monthly_amount", "monthly_value", "valor_mensal", "monthly_fee"):
+            value = tenant.get(key)
+            if value is not None:
+                return value
+        return None
 
     def form_valid(self, form):
         client = SaasApiClient()

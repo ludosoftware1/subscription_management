@@ -40,6 +40,54 @@
             </div>
             {% endif %}
 
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Filtrar pagamentos</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="get" class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="filter_schema_name" class="form-label">Cliente</label>
+                                    <select class="form-select" id="filter_schema_name" name="schema_name">
+                                        <option value="">Todos</option>
+                                        {% for value, label in tenant_choices %}
+                                        <option value="{{ value }}"{% if filter_schema_name == value %} selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="filter_start_date" class="form-label">Data inicial</label>
+                                    <input
+                                        type="date"
+                                        class="form-control"
+                                        id="filter_start_date"
+                                        name="start_date"
+                                        value="{{ filter_start_date|default_if_none:'' }}"
+                                    >
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="filter_end_date" class="form-label">Data final</label>
+                                    <input
+                                        type="date"
+                                        class="form-control"
+                                        id="filter_end_date"
+                                        name="end_date"
+                                        value="{{ filter_end_date|default_if_none:'' }}"
+                                    >
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        Aplicar filtros
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-12">
                     <div class="card">
