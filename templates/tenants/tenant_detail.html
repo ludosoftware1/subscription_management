@@ -75,8 +75,18 @@
                                     {{ tenant.manager_licenses|default:"-" }} / {{ tenant.staff_licenses|default:"-" }}
                                 </dd>
 
-                                <dt class="col-sm-5">Storage (GB)</dt>
-                                <dd class="col-sm-7">{{ tenant.storage_gb|default:"-" }}</dd>
+                                <dt class="col-sm-5">Armazenamento</dt>
+                                <dd class="col-sm-7">
+                                    {% if tenant.storage_gb %}
+                                        {% if tenant.storage_used_gb or tenant.storage_used_gb == 0 %}
+                                            {{ tenant.storage_used_gb }} / {{ tenant.storage_gb }} GB{% if tenant.storage_used_percent or tenant.storage_used_percent == 0 %} ({{ tenant.storage_used_percent }}%){% endif %}
+                                        {% else %}
+                                            {{ tenant.storage_gb }} GB
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </dd>
                             </dl>
                             {% else %}
                             <p class="text-muted mb-0">Não foi possível carregar os dados do cliente.</p>

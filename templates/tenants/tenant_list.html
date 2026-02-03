@@ -56,7 +56,7 @@
                                             <th>Status</th>
                                             <th>Pago até</th>
                                             <th>Licenças (M / S)</th>
-                                            <th>Storage (GB)</th>
+                                            <th>Armazenamento</th>
                                             <th>Criado em</th>
                                             <th>Ações</th>
                                         </tr>
@@ -88,7 +88,15 @@
                                                 {{ tenant.staff_licenses|default:"-" }}
                                             </td>
                                             <td>
-                                                {{ tenant.storage_gb|default:"-" }}
+                                                {% if tenant.storage_gb %}
+                                                    {% if tenant.storage_used_gb or tenant.storage_used_gb == 0 %}
+                                                        {{ tenant.storage_used_gb }} / {{ tenant.storage_gb }} GB{% if tenant.storage_used_percent or tenant.storage_used_percent == 0 %} ({{ tenant.storage_used_percent }}%){% endif %}
+                                                    {% else %}
+                                                        {{ tenant.storage_gb }} GB
+                                                    {% endif %}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
                                             </td>
                                             <td>
                                                 {% if tenant.created_on %}
