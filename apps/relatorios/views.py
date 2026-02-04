@@ -440,7 +440,7 @@ def add_header_and_footer(canvas, doc, configuracao=None):
     # Sistema no cabeçalho (direita)
     canvas.setFont("Helvetica", 8)
     canvas.setFillColor(colors.gray)
-    canvas.drawRightString(7.5*inch, 10.7*inch, "Sistema de Gestão de Frotas")
+    canvas.drawRightString(7.5*inch, 10.7*inch, "Sistema de Gestão de Assinaturas")
 
     # Linha separadora do cabeçalho
     canvas.setStrokeColor(colors.lightgrey)
@@ -572,7 +572,7 @@ def export_report_to_pdf(request):
     configuracao, created = ConfiguracaoSite.objects.get_or_create(pk=1)
 
     # Definir título do PDF com nome do sistema
-    nome_sistema = configuracao.nome_prefeitura or "Sistema de Gestão de Frotas"
+    nome_sistema = configuracao.nome_prefeitura or "Sistema de Gestão de Assinaturas"
     pdf_title = f"{report_title} - {nome_sistema}"
 
     buffer = BytesIO()

@@ -173,6 +173,9 @@ class TenantUpdateView(LoginRequiredMixin, FormView):
         if field is not None:
             attrs = field.widget.attrs
             attrs["readonly"] = True
+        email_field = form.fields.get("email")
+        if email_field is not None:
+            email_field.required = False
         return form
 
     def get_initial(self):
@@ -184,6 +187,13 @@ class TenantUpdateView(LoginRequiredMixin, FormView):
         except SaasApiError as exc:
             messages.error(self.request, str(exc))
             return initial
+        monthly_price = None
+        if isinstance(tenant, dict):
+            for key in ("monthly_price", "monthly_amount", "monthly_value", "valor_mensal", "monthly_fee"):
+                value = tenant.get(key)
+                if value is not None:
+                    monthly_price = value
+                    break
         initial.update(
             {
                 "schema_name": tenant.get("schema_name") or "",
@@ -194,6 +204,7 @@ class TenantUpdateView(LoginRequiredMixin, FormView):
                 "manager_licenses": tenant.get("manager_licenses") if tenant.get("manager_licenses") is not None else 0,
                 "staff_licenses": tenant.get("staff_licenses") if tenant.get("staff_licenses") is not None else 0,
                 "storage_gb": tenant.get("storage_gb") if tenant.get("storage_gb") is not None else 0,
+                "monthly_price": monthly_price,
             }
         )
         return initial
@@ -206,6 +217,7 @@ class TenantUpdateView(LoginRequiredMixin, FormView):
         manager_licenses = data.get("manager_licenses")
         staff_licenses = data.get("staff_licenses")
         storage_gb = data.get("storage_gb")
+        monthly_price = data.get("monthly_price")
         payload = {
             "client_name": data.get("client_name"),
             "on_trial": data.get("on_trial"),
@@ -215,6 +227,8 @@ class TenantUpdateView(LoginRequiredMixin, FormView):
             "staff_licenses": staff_licenses if staff_licenses is not None else 0,
             "storage_gb": storage_gb if storage_gb is not None else 0,
         }
+        if monthly_price is not None:
+            payload["monthly_price"] = float(monthly_price)
         try:
             client.update_tenant(schema_name, payload)
             messages.success(self.request, "Tenant atualizado com sucesso na API.")
