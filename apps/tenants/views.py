@@ -1,4 +1,6 @@
 from datetime import date
+import secrets
+import string
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -116,19 +118,38 @@ class TenantCreateView(LoginRequiredMixin, FormView):
         manager_licenses = data.get("manager_licenses")
         staff_licenses = data.get("staff_licenses")
         storage_gb = data.get("storage_gb")
+        email = data.get("email")
+        password = data.get("password") or ""
+        generate_password = data.get("generate_password")
+
+        if generate_password:
+            alphabet = string.ascii_letters + string.digits
+            password = "".join(secrets.choice(alphabet) for _ in range(12))
+        elif not password:
+            form.add_error(
+                "password",
+                "Informe uma senha ou marque a opção de gerar automaticamente.",
+            )
+            return self.form_invalid(form)
+
         payload = {
             "schema_name": data.get("schema_name"),
             "client_name": data.get("client_name"),
             "on_trial": data.get("on_trial"),
             "paid_until": paid_until.isoformat() if paid_until else None,
             "domain": data.get("primary_domain"),
+            "email": email,
+            "password": password,
             "manager_licenses": manager_licenses if manager_licenses is not None else 0,
             "staff_licenses": staff_licenses if staff_licenses is not None else 0,
             "storage_gb": storage_gb if storage_gb is not None else 0,
         }
         try:
             client.create_tenant(payload)
-            messages.success(self.request, "Tenant criado com sucesso na API.")
+            messages.success(
+                self.request,
+                f"Tenant criado com sucesso na API. Senha do super usuário: {password}",
+            )
             return redirect(self.get_success_url())
         except SaasApiError as exc:
             messages.error(self.request, str(exc))

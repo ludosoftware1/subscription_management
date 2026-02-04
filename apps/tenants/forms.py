@@ -16,6 +16,15 @@ class TenantForm(forms.Form):
         max_length=255,
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
+    email = forms.EmailField(
+        label="E-mail do super usuário",
+        widget=forms.EmailInput(attrs={"class": "form-control"}),
+    )
+    password = forms.CharField(
+        label="Senha do super usuário",
+        required=False,
+        widget=forms.PasswordInput(attrs={"class": "form-control"}),
+    )
     primary_domain = forms.CharField(
         label="Domínio principal",
         max_length=255,
@@ -41,6 +50,11 @@ class TenantForm(forms.Form):
     )
     on_trial = forms.BooleanField(
         label="Em período de teste",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
+    )
+    generate_password = forms.BooleanField(
+        label="Gerar senha automaticamente",
         required=False,
         widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
     )

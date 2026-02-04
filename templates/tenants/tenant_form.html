@@ -78,6 +78,52 @@
                                     </div>
                                 </div>
 
+                                {% if not form.initial.schema_name %}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                                E-mail do super usuário
+                                            </label>
+                                            {{ form.email }}
+                                            {% if form.email.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.email.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.password.id_for_label }}" class="form-label">
+                                                Senha do super usuário
+                                            </label>
+                                            {{ form.password }}
+                                            {% if form.password.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.password.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 d-flex align-items-center">
+                                        <div class="form-check form-switch">
+                                            {{ form.generate_password }}
+                                            <label class="form-check-label" for="{{ form.generate_password.id_for_label }}">
+                                                Gerar senha automaticamente
+                                            </label>
+                                            {% if form.generate_password.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.generate_password.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
                                 <div class="mb-3">
                                     <label for="{{ form.primary_domain.id_for_label }}" class="form-label">
                                         Domínio principal
