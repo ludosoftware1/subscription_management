@@ -150,6 +150,19 @@
                                             {% endif %}
                                         </div>
                                     </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="{{ form.monthly_price.id_for_label }}" class="form-label">
+                                                Valor mensal
+                                            </label>
+                                            {{ form.monthly_price }}
+                                            {% if form.monthly_price.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.monthly_price.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                     <div class="col-md-4 d-flex align-items-center">
                                         <div class="form-check form-switch mt-4">
                                             {{ form.on_trial }}

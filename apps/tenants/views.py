@@ -118,6 +118,7 @@ class TenantCreateView(LoginRequiredMixin, FormView):
         manager_licenses = data.get("manager_licenses")
         staff_licenses = data.get("staff_licenses")
         storage_gb = data.get("storage_gb")
+        monthly_price = data.get("monthly_price")
         email = data.get("email")
         password = data.get("password") or ""
         generate_password = data.get("generate_password")
@@ -140,6 +141,7 @@ class TenantCreateView(LoginRequiredMixin, FormView):
             "domain": data.get("primary_domain"),
             "email": email,
             "password": password,
+            "monthly_price": float(monthly_price) if monthly_price is not None else 0,
             "manager_licenses": manager_licenses if manager_licenses is not None else 0,
             "staff_licenses": staff_licenses if staff_licenses is not None else 0,
             "storage_gb": storage_gb if storage_gb is not None else 0,

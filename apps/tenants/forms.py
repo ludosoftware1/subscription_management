@@ -48,6 +48,20 @@ class TenantForm(forms.Form):
         min_value=0,
         widget=forms.NumberInput(attrs={"class": "form-control"}),
     )
+    monthly_price = forms.DecimalField(
+        label="Valor mensal",
+        required=False,
+        min_value=0,
+        max_digits=10,
+        decimal_places=2,
+        widget=forms.NumberInput(
+            attrs={
+                "class": "form-control",
+                "step": "0.01",
+                "min": "0",
+            },
+        ),
+    )
     on_trial = forms.BooleanField(
         label="Em período de teste",
         required=False,
