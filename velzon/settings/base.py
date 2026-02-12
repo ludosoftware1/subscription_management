@@ -149,7 +149,7 @@ USE_L10N = True # Habilita a formatação de números e datas para a localidade
 USE_TZ = True
 
 # Arquivos Estáticos e Mídia
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 # Configuração do WhiteNoise para armazenamento de arquivos estáticos
