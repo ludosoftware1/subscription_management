@@ -7,12 +7,12 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_TRUSTED_ORIGINS = [
     'https://*.railway.app',
 ]
-# SECURE_SSL_REDIRECT = False # Ative se seu site usa HTTPS (recomendado)
+SECURE_SSL_REDIRECT = False # Ative se seu site usa HTTPS (recomendado)
 
 # HSTS - Descomente após confirmar que seu site funciona 100% com HTTPS
-# SECURE_HSTS_SECONDS = 31536000  # 1 ano
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
+SECURE_HSTS_SECONDS = 31536000  # 1 ano
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
 # Configurações de email para produção (exemplo com SMTP, usar variáveis de ambiente)
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
