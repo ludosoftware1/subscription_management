@@ -8,6 +8,9 @@ class SaasApiError(Exception):
 
 
 class SaasApiClient:
+    DEFAULT_TIMEOUT = 10
+    CREATE_TIMEOUT = 120  # criação de tenant envolve schema + migrations
+
     def __init__(self) -> None:
         self.base_url = getattr(settings, "SAAS_API_BASE_URL", None)
         self.api_key = getattr(settings, "SAAS_API_KEY", None)
@@ -44,7 +47,7 @@ class SaasApiClient:
     def list_tenants(self) -> list:
         try:
             url = self._get_url("api/tenants/")
-            response = requests.get(url, headers=self._get_headers(), timeout=10)
+            response = requests.get(url, headers=self._get_headers(), timeout=self.DEFAULT_TIMEOUT)
             data = self._handle_response(response, "Erro ao buscar tenants na API")
             if isinstance(data, list):
                 return data
@@ -55,7 +58,7 @@ class SaasApiClient:
     def retrieve_tenant(self, schema_name: str) -> dict:
         try:
             url = self._get_url(f"api/tenants/{schema_name}/")
-            response = requests.get(url, headers=self._get_headers(), timeout=10)
+            response = requests.get(url, headers=self._get_headers(), timeout=self.DEFAULT_TIMEOUT)
             data = self._handle_response(response, "Erro ao buscar tenant na API")
             if isinstance(data, dict):
                 return data
@@ -66,7 +69,7 @@ class SaasApiClient:
     def create_tenant(self, payload: dict) -> dict:
         try:
             url = self._get_url("api/tenants/create/")
-            response = requests.post(url, json=payload, headers=self._get_headers(), timeout=10)
+            response = requests.post(url, json=payload, headers=self._get_headers(), timeout=self.CREATE_TIMEOUT)
             data = self._handle_response(response, "Erro ao criar tenant na API")
             if isinstance(data, dict):
                 return data
@@ -78,7 +81,7 @@ class SaasApiClient:
         try:
             url = self._get_url(f"api/tenants/{schema_name}/update/")
             method = requests.patch if partial else requests.put
-            response = method(url, json=payload, headers=self._get_headers(), timeout=10)
+            response = method(url, json=payload, headers=self._get_headers(), timeout=self.DEFAULT_TIMEOUT)
             data = self._handle_response(response, "Erro ao atualizar tenant na API")
             if isinstance(data, dict):
                 return data
