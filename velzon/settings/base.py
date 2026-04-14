@@ -33,7 +33,8 @@ SITE_URL = env('SITE_URL', default='http://localhost:8000')
 # URL do logo para uso em e-mails
 LOGO_URL = env('LOGO_URL', default=None)
 
-# Tokens para a API de Notificação Externa
+# Tokens e URL para a API de Notificação Externa
+NOTIFICATION_API_URL = env('NOTIFICATION_API_URL', default='https://notification-center.onrender.com/api/v1/email/send-email')
 API_AUTH_TOKEN = env('API_AUTH_TOKEN', default='default-api-key-from-settings')
 NOTIFICATION_WEBHOOK_TOKEN = env('NOTIFICATION_WEBHOOK_TOKEN', default='default-webhook-token-from-settings')
 

@@ -47,7 +47,7 @@ def send_templated_email(template_name, subject, to_email, context, request=None
         html_body = render_to_string(template_path, context)
 
         # Configurações da API externa
-        NOTIFICATION_API_URL = 'https://notification-center.onrender.com/api/v1/email/send-email'
+        NOTIFICATION_API_URL = settings.NOTIFICATION_API_URL
         # O token de autorização da API será lido das configurações do Django (settings.py)
         API_AUTH_TOKEN = settings.API_AUTH_TOKEN
         # O webhook_token será lido das configurações do Django (settings.py)
