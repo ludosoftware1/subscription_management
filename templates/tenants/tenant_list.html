@@ -1,6 +1,6 @@
 {% extends "partials/base.html" %}
 {% load static %}
-{% block title %}Clientes do SaaS{% endblock title %}
+{% block title %}Clientes do UltraDoc{% endblock title %}
 
 {% block content %}
 <div class="main-content">
@@ -10,8 +10,8 @@
                 <div class="col-12">
                     <div class="d-flex align-items-lg-center flex-lg-row flex-column">
                         <div class="flex-grow-1">
-                            <h4 class="fs-16 mb-1">Clientes do SaaS</h4>
-                            <p class="text-muted mb-0">Controle de clientes, assinaturas e pagamentos por cliente.</p>
+                            <h4 class="fs-16 mb-1">Clientes do UltraDoc</h4>
+                            <p class="text-muted mb-0">Tenants cadastrados no UltraDoc: situação da assinatura, licenças, armazenamento e pagamentos.</p>
                         </div>
                         <div class="mt-3 mt-lg-0 d-flex gap-2">
                             <a href="{% url 'tenants:payments-list' %}" class="btn btn-soft-secondary">
@@ -42,7 +42,31 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h5 class="card-title mb-0">Lista de clientes</h5>
+                            <form method="get" class="row g-2 align-items-center">
+                                <div class="col-md-5">
+                                    <div class="search-box">
+                                        <input type="text" name="q" value="{{ filter_q }}" class="form-control search" placeholder="Buscar por identificador, nome ou domínio">
+                                        <i class="ri-search-line search-icon"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <select name="status" class="form-select">
+                                        <option value="">Todas as situações</option>
+                                        {% for value, label in status_choices %}
+                                        <option value="{{ value }}" {% if filter_status == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4 d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="ri-filter-2-line align-middle me-1"></i> Filtrar
+                                    </button>
+                                    {% if filter_q or filter_status %}
+                                    <a href="{% url 'tenants:list' %}" class="btn btn-soft-secondary">Limpar</a>
+                                    {% endif %}
+                                    <span class="ms-auto text-muted align-self-center fs-12">{{ tenants|length }} de {{ total_count }} cliente(s)</span>
+                                </div>
+                            </form>
                         </div>
                         <div class="card-body">
                             {% if tenants %}
@@ -53,8 +77,9 @@
                                             <th>Identificador</th>
                                             <th>Cliente</th>
                                             <th>Domínio principal</th>
-                                            <th>Status</th>
+                                            <th>Situação</th>
                                             <th>Pago até</th>
+                                            <th>Valor mensal</th>
                                             <th>Licenças (M / S)</th>
                                             <th>Armazenamento</th>
                                             <th>Criado em</th>
@@ -64,62 +89,67 @@
                                     <tbody>
                                         {% for tenant in tenants %}
                                         <tr>
-                                            <td class="fw-medium">{{ tenant.schema_name|default:tenant.schema_name }}</td>
+                                            <td class="fw-medium">{{ tenant.schema_name }}</td>
                                             <td>{{ tenant.client_name }}</td>
-                                            <td>{{ tenant.primary_domain }}</td>
                                             <td>
-                                                {% if tenant.on_trial %}
-                                                <span class="badge bg-info-subtle text-info">Em teste</span>
-                                                {% elif tenant.paid_until %}
-                                                <span class="badge bg-success-subtle text-success">Ativo</span>
-                                                {% else %}
-                                                <span class="badge bg-warning-subtle text-warning">Pendente</span>
-                                                {% endif %}
+                                                {% if tenant.primary_domain %}
+                                                <a href="https://{{ tenant.primary_domain }}" target="_blank" rel="noopener" class="link-secondary">{{ tenant.primary_domain }}</a>
+                                                {% else %}-{% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ tenant.status_color }}-subtle text-{{ tenant.status_color }}">{{ tenant.status_label }}</span>
                                             </td>
                                             <td>
                                                 {% if tenant.paid_until %}
                                                     {{ tenant.paid_until|date:"d/m/Y" }}
-                                                {% else %}
-                                                    -
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {{ tenant.manager_licenses|default:"-" }} /
-                                                {{ tenant.staff_licenses|default:"-" }}
-                                            </td>
-                                            <td>
-                                                {% if tenant.storage_gb %}
-                                                    {% if tenant.storage_used_gb or tenant.storage_used_gb == 0 %}
-                                                        {{ tenant.storage_used_gb }} / {{ tenant.storage_gb }} GB{% if tenant.storage_used_percent or tenant.storage_used_percent == 0 %} ({{ tenant.storage_used_percent }}%){% endif %}
-                                                    {% else %}
-                                                        {{ tenant.storage_gb }} GB
+                                                    {% if tenant.days_left is not None and tenant.days_left >= 0 and tenant.days_left <= 30 %}
+                                                    <small class="text-muted d-block">em {{ tenant.days_left }} dia(s)</small>
                                                     {% endif %}
                                                 {% else %}
-                                                    -
+                                                    <span class="text-muted">sem vencimento</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>R$ {{ tenant.monthly_price|floatformat:2 }}</td>
+                                            <td>{{ tenant.manager_licenses|default:"0" }} / {{ tenant.staff_licenses|default:"0" }}</td>
+                                            <td>
+                                                {% if tenant.storage_gb %}
+                                                    {{ tenant.storage_used_gb|default:"0" }} / {{ tenant.storage_gb }} GB
+                                                    {% if tenant.storage_used_percent is not None %}
+                                                    <div class="progress progress-sm mt-1" style="min-width: 80px;">
+                                                        <div class="progress-bar {% if tenant.storage_used_percent >= 90 %}bg-danger{% elif tenant.storage_used_percent >= 75 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ tenant.storage_used_percent }}%" aria-valuenow="{{ tenant.storage_used_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    {% endif %}
+                                                {% else %}
+                                                    {{ tenant.storage_used_gb|default:"0" }} GB <small class="text-muted">(sem cota)</small>
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                {% if tenant.created_on %}
-                                                    {{ tenant.created_on|date:"d/m/Y" }}
-                                                {% else %}
-                                                    -
-                                                {% endif %}
+                                                {% if tenant.created_on %}{{ tenant.created_on|date:"d/m/Y" }}{% else %}-{% endif %}
                                             </td>
-                                            <td class="d-flex gap-1">
-                                                <a href="{% url 'tenants:detail' tenant.schema_name %}" class="btn btn-sm btn-soft-secondary">
-                                                    <i class="ri-eye-line align-middle"></i>
-                                                </a>
-                                                <a href="{% url 'tenants:update' tenant.schema_name %}" class="btn btn-sm btn-soft-primary">
-                                                    <i class="ri-edit-line align-middle"></i>
-                                                </a>
+                                            <td>
+                                                <div class="d-flex gap-1">
+                                                    <a href="{% url 'tenants:detail' tenant.schema_name %}" class="btn btn-sm btn-soft-secondary" title="Detalhes">
+                                                        <i class="ri-eye-line align-middle"></i>
+                                                    </a>
+                                                    <a href="{% url 'tenants:update' tenant.schema_name %}" class="btn btn-sm btn-soft-primary" title="Editar">
+                                                        <i class="ri-edit-line align-middle"></i>
+                                                    </a>
+                                                    <a href="{% url 'tenants:payments-create' %}?schema_name={{ tenant.schema_name }}" class="btn btn-sm btn-soft-success" title="Registrar pagamento">
+                                                        <i class="ri-bank-card-line align-middle"></i>
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
+                            {% elif error_message %}
+                            <p class="text-muted mb-0">Não foi possível carregar os clientes do UltraDoc. Corrija a configuração da API e recarregue a página.</p>
+                            {% elif filter_q or filter_status %}
+                            <p class="text-muted mb-0">Nenhum cliente corresponde ao filtro.</p>
                             {% else %}
-                            <p class="text-muted mb-0">Nenhum cliente encontrado. Configure a API e crie o primeiro cliente.</p>
+                            <p class="text-muted mb-0">Nenhum cliente cadastrado no UltraDoc ainda. Use “Novo cliente” para criar o primeiro.</p>
                             {% endif %}
                         </div>
                     </div>

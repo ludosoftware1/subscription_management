@@ -1,0 +1,35 @@
+# Nada disto entra na imagem: ambientes, segredos, bancos locais e artefatos gerados.
+.git
+.gitignore
+.github
+.vscode
+.idea
+venv
+.venv
+env
+node_modules
+__pycache__
+*.pyc
+*.pyo
+*.sqlite3
+db.sqlite3
+.env
+.env.*
+!.env.example
+*.log
+# gerados no build (gulp -> static/) ou em runtime (collectstatic -> staticfiles/, uploads -> media/)
+static
+staticfiles
+media
+build
+dist
+.pytest_cache
+.mypy_cache
+.coverage
+htmlcov
+# documentação/ferramentas que não rodam dentro do container
+BranchsGit.md
+Procfile
+build.sh
+docker-compose.yml
+README.md

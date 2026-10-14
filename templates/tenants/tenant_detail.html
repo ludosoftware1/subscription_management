@@ -58,15 +58,40 @@
                                 <dt class="col-sm-5">Nome</dt>
                                 <dd class="col-sm-7">{{ tenant.client_name }}</dd>
 
+                                <dt class="col-sm-5">Situação</dt>
+                                <dd class="col-sm-7">
+                                    <span class="badge bg-{{ tenant.status_color }}-subtle text-{{ tenant.status_color }}">{{ tenant.status_label }}</span>
+                                    {% if tenant.status == "expired" %}
+                                        <small class="text-danger d-block">Acesso bloqueado no UltraDoc desde o vencimento.</small>
+                                    {% elif tenant.days_left is not None %}
+                                        <small class="text-muted d-block">{{ tenant.days_left }} dia(s) restante(s)</small>
+                                    {% endif %}
+                                </dd>
+
                                 <dt class="col-sm-5">Domínio</dt>
-                                <dd class="col-sm-7">{{ tenant.primary_domain|default:"-" }}</dd>
+                                <dd class="col-sm-7">
+                                    {% if tenant.primary_domain %}
+                                        <a href="https://{{ tenant.primary_domain }}" target="_blank" rel="noopener">{{ tenant.primary_domain }}</a>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                    {% for extra in tenant.domains %}
+                                        <small class="text-muted d-block">{{ extra }}</small>
+                                    {% endfor %}
+                                </dd>
+
+                                <dt class="col-sm-5">Valor mensal</dt>
+                                <dd class="col-sm-7">R$ {{ tenant.monthly_price|floatformat:2 }}</dd>
+
+                                <dt class="col-sm-5">Criado em</dt>
+                                <dd class="col-sm-7">{% if tenant.created_on %}{{ tenant.created_on|date:"d/m/Y" }}{% else %}-{% endif %}</dd>
 
                                 <dt class="col-sm-5">Pago até</dt>
                                 <dd class="col-sm-7">
                                     {% if tenant.paid_until %}
                                         {{ tenant.paid_until|date:"d/m/Y" }}
                                     {% else %}
-                                        -
+                                        <span class="text-muted">sem vencimento</span>
                                     {% endif %}
                                 </dd>
 
@@ -97,8 +122,12 @@
 
                 <div class="col-lg-8">
                     <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Pagamentos registrados</h5>
+                        <div class="card-header d-flex align-items-center flex-wrap gap-2">
+                            <h5 class="card-title mb-0 flex-grow-1">Pagamentos registrados</h5>
+                            <span class="text-muted fs-12">
+                                Total pago: <strong>R$ {{ paid_total|floatformat:2 }}</strong>
+                                {% if last_payment %} · último em {{ last_payment.payment_date|date:"d/m/Y" }}{% endif %}
+                            </span>
                         </div>
                         <div class="card-body">
                             {% if payments %}

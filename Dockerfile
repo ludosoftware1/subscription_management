@@ -1,11 +1,13 @@
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
+# libcairo/pango/jpeg: weasyprint e pillow. nodejs/npm: build dos assets do tema (gulp).
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libffi-dev \
     libssl-dev \
@@ -21,16 +23,25 @@ RUN apt-get update && apt-get install -y \
     npm \
     && rm -rf /var/lib/apt/lists/*
 
+# Dependências Python em camada própria (só reinstala quando requirements.txt muda).
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Assets do tema: o gulp gera ./static a partir de ./src. Camada separada para
+# não refazer o npm install a cada mudança em código Python/templates.
+COPY package.json package-lock.json gulpfile.js ./
+RUN npm install --no-audit --no-fund
+COPY src ./src
+RUN npx gulp build
 
-RUN npm install && npx gulp build
+# Código da aplicação (ver .dockerignore: sem .env, venv, node_modules, static/, media/).
+COPY . .
 
 ENV DJANGO_SETTINGS_MODULE=velzon.settings.production \
     PORT=8000
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate && (python manage.py createsuperuser --noinput || true) && python manage.py collectstatic --noinput && gunicorn velzon.wsgi:application --bind 0.0.0.0:${PORT}"]
+# Migrações, superusuário inicial, collectstatic e Gunicorn (timeout compatível
+# com a criação de tenant no UltraDoc) ficam no entrypoint.
+CMD ["sh", "docker-entrypoint.sh"]

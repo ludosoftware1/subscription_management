@@ -1,18 +1,20 @@
-from django.contrib import admin
-from django.urls import include, path
-from django.contrib.auth.decorators import login_required
-from django.conf.urls.static import static
 from django.conf import settings
+from django.contrib import admin
+from django.contrib.auth.decorators import login_required
+from django.urls import include, path, re_path
+from django.views.static import serve
+
+from apps.tenants.views import DashboardView
+
 from .views import (
     MyPasswordChangeView,
     MyPasswordSetView,
 )
-from pages.views import pages_starter
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", login_required(pages_starter), name="home"),
-    path("dashboard", login_required(pages_starter), name="dashboard"),
+    path("", DashboardView.as_view(), name="home"),
+    path("dashboard", DashboardView.as_view(), name="dashboard"),
     path("apps/", include("apps.urls")),
     path("layouts/", include("layouts.urls")),
     path("components/", include("components.urls")),
@@ -34,9 +36,15 @@ urlpatterns = [
     path("feedback/", include("apps.feedback.urls", namespace="feedback")),
     path("email/", include("apps.email_app.urls", namespace="email_app")),
     path("tenants/", include("apps.tenants.urls", namespace="tenants")),
+    # Anexos (notas fiscais dos pagamentos, logos): servidos pelo Django só a
+    # usuários autenticados, inclusive em produção -- o WhiteNoise cuida apenas
+    # dos estáticos e não há nginx dedicado para /media/ no container.
+    re_path(
+        r"^media/(?P<path>.*)$",
+        login_required(serve),
+        {"document_root": settings.MEDIA_ROOT},
+        name="media",
+    ),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler403 = "apps.core.views.permission_denied_view"

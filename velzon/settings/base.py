@@ -38,9 +38,21 @@ NOTIFICATION_API_URL = env('NOTIFICATION_API_URL', default='https://notification
 API_AUTH_TOKEN = env('API_AUTH_TOKEN', default='default-api-key-from-settings')
 NOTIFICATION_WEBHOOK_TOKEN = env('NOTIFICATION_WEBHOOK_TOKEN', default='default-webhook-token-from-settings')
 
-# Configurações da API do SaaS multi-tenant
+# --- Integração com o UltraDoc (API /api/tenants/, ver apps/tenants/services.py) ---
+# URL por onde este servidor alcança o UltraDoc (pública ou interna do Docker).
 SAAS_API_BASE_URL = env('SAAS_API_BASE_URL', default=None)
+# Mesma chave do SAAS_API_KEY no .env do UltraDoc.
 SAAS_API_KEY = env('SAAS_API_KEY', default=None)
+# Host administrativo cadastrado no UltraDoc (SAAS_API_HOSTS de lá). Enviado no
+# cabeçalho Host quando a chamada é interna (ex.: http://host.docker.internal:8010).
+SAAS_API_HOST_HEADER = env('SAAS_API_HOST_HEADER', default=None)
+# "https" faz o UltraDoc tratar a chamada interna como segura (SECURE_SSL_REDIRECT).
+SAAS_API_FORWARDED_PROTO = env('SAAS_API_FORWARDED_PROTO', default=None)
+SAAS_API_TIMEOUT = env.int('SAAS_API_TIMEOUT', default=15)
+# Criar tenant = CREATE SCHEMA + todas as migrations do UltraDoc; pode levar minutos.
+# Deve ser MENOR que o timeout do Gunicorn deste painel (GUNICORN_TIMEOUT).
+SAAS_API_CREATE_TIMEOUT = env.int('SAAS_API_CREATE_TIMEOUT', default=300)
+SAAS_API_VERIFY_SSL = env.bool('SAAS_API_VERIFY_SSL', default=True)
 
 # --- Configurações Comuns do Django (copiadas do seu settings.py) ---
 INSTALLED_APPS = [
@@ -200,6 +212,12 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
+        },
+        # Falhas de comunicação com a API do UltraDoc aparecem no `docker compose logs web`.
+        'apps.tenants': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
         },
     },
 }

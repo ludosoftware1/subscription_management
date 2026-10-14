@@ -1,0 +1,5 @@
+# Scripts executados dentro do container Linux precisam de quebra de linha LF,
+# mesmo quando o clone é feito no Windows.
+*.sh text eol=lf
+docker-entrypoint.sh text eol=lf
+Dockerfile text eol=lf

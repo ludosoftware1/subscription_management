@@ -1,6 +1,6 @@
 {% extends "partials/base.html" %}
 {% load static %}
-{% block title %}{% if form.initial.schema_name %}Editar cliente{% else %}Novo cliente{% endif %} | Clientes SaaS{% endblock title %}
+{% block title %}{% if is_update %}Editar cliente{% else %}Novo cliente{% endif %} | Clientes SaaS{% endblock title %}
 
 {% block content %}
 <div class="main-content">
@@ -11,7 +11,7 @@
                     <div class="d-flex align-items-lg-center flex-lg-row flex-column">
                         <div class="flex-grow-1">
                             <h4 class="fs-16 mb-1">
-                                {% if form.initial.schema_name %}Editar cliente{% else %}Novo cliente{% endif %}
+                                {% if is_update %}Editar cliente{% else %}Novo cliente{% endif %}
                             </h4>
                             <p class="text-muted mb-0">
                                 Defina os dados do cliente e o status da assinatura no SaaS.
@@ -60,6 +60,8 @@
                                             <div class="invalid-feedback d-block">
                                                 {{ form.schema_name.errors.0 }}
                                             </div>
+                                            {% elif not is_update %}
+                                            <div class="form-text">{{ form.schema_name.help_text }}</div>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -78,7 +80,7 @@
                                     </div>
                                 </div>
 
-                                {% if not form.initial.schema_name %}
+                                {% if not is_update %}
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
@@ -123,6 +125,8 @@
                                     <div class="invalid-feedback d-block">
                                         {{ form.primary_domain.errors.0 }}
                                     </div>
+                                    {% else %}
+                                    <div class="form-text">{{ form.primary_domain.help_text }}</div>
                                     {% endif %}
                                 </div>
 
@@ -137,6 +141,8 @@
                                             <div class="invalid-feedback d-block">
                                                 {{ form.paid_until.errors.0 }}
                                             </div>
+                                            {% else %}
+                                            <div class="form-text">{{ form.paid_until.help_text }}</div>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -225,7 +231,7 @@
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-primary">
                                         <i class="ri-save-line align-middle me-1"></i>
-                                        {% if form.initial.schema_name %}Salvar alterações{% else %}Criar tenant{% endif %}
+                                        {% if is_update %}Salvar alterações{% else %}Criar tenant{% endif %}
                                     </button>
                                     <a href="{% url 'tenants:list' %}" class="btn btn-outline-secondary">
                                         Cancelar

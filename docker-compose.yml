@@ -1,0 +1,70 @@
+# Painel de assinaturas — gerencia os clientes (tenants) do UltraDoc.
+#
+# Produção:  docker compose up -d --build        (sobe só o web; Postgres no host)
+# Local:     docker compose --profile local-db up -d --build   (Postgres em container; POSTGRES_HOST=db)
+#
+# O painel NÃO acessa o banco do UltraDoc: toda a gestão de clientes passa pela
+# API /api/tenants/ do UltraDoc (SAAS_API_BASE_URL + SAAS_API_KEY no .env).
+services:
+  # Postgres em container — OPCIONAL, para desenvolvimento local. Em produção o
+  # banco roda no servidor (fora do Docker), como no UltraDoc, num banco próprio.
+  db:
+    image: postgres:16
+    container_name: subscription_db
+    profiles: ["local-db"]
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    # Sem "ports": acessível apenas pela rede interna do Docker.
+
+  web:
+    container_name: subscription_web
+    restart: always
+    build: .
+    image: subscription_management:latest
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: velzon.settings.production
+      # Porta interna do Gunicorn (fixa). A publicada no host é APP_PORT.
+      PORT: "8000"
+    ports:
+      # Única porta publicada no host. O UltraDoc costuma usar 8000/8010; este
+      # painel sobe por padrão na 8001.
+      - "${APP_PORT:-8001}:8000"
+    volumes:
+      # Anexos (notas fiscais dos pagamentos). Sem volume, somem ao recriar o container.
+      - media_data:/app/media
+    extra_hosts:
+      # Alcança serviços do host: o Postgres (POSTGRES_HOST=host.docker.internal)
+      # e a porta publicada do UltraDoc (SAAS_API_BASE_URL=http://host.docker.internal:<APP_PORT do UltraDoc>).
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+        required: false
+    # Alternativa: falar com o UltraDoc pela rede interna do Docker, sem passar
+    # pela porta publicada no host. Descomente aqui e em "networks" abaixo e use
+    # SAAS_API_BASE_URL=http://syndoc_web:8000 (mantendo SAAS_API_HOST_HEADER).
+    # networks:
+    #   - default
+    #   - ultradoc
+
+# networks:
+#   ultradoc:
+#     external: true
+#     # Nome da rede criada pelo compose do UltraDoc (<pasta do projeto>_default).
+#     name: ultradoc_default
+
+volumes:
+  postgres_data:
+  media_data:

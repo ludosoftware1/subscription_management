@@ -1,0 +1,253 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Painel de assinaturas{% endblock title %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            <div class="row mb-3 pb-1">
+                <div class="col-12">
+                    <div class="d-flex align-items-lg-center flex-lg-row flex-column">
+                        <div class="flex-grow-1">
+                            <h4 class="fs-16 mb-1">Painel de assinaturas</h4>
+                            <p class="text-muted mb-0">Visão geral dos clientes (tenants) do UltraDoc e dos pagamentos registrados.</p>
+                        </div>
+                        <div class="mt-3 mt-lg-0 d-flex gap-2">
+                            <a href="{% url 'tenants:list' %}" class="btn btn-soft-secondary">
+                                <i class="ri-group-line align-middle me-1"></i> Clientes
+                            </a>
+                            <a href="{% url 'tenants:payments-list' %}" class="btn btn-soft-secondary">
+                                <i class="ri-bank-card-line align-middle me-1"></i> Pagamentos
+                            </a>
+                            <a href="{% url 'tenants:create' %}" class="btn btn-success">
+                                <i class="ri-add-circle-line align-middle me-1"></i> Novo cliente
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if messages %}
+            <div class="row">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-12">
+                    {% if api_ok %}
+                    <div class="alert alert-success border-0 d-flex align-items-center" role="alert">
+                        <i class="ri-checkbox-circle-line fs-18 me-2"></i>
+                        <div>UltraDoc conectado: <strong>{{ api_base_url }}</strong>{% if api_host_header %} (Host: {{ api_host_header }}){% endif %}.</div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-danger border-0" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="ri-error-warning-line fs-18 me-2"></i>
+                            <div><strong>Sem comunicação com o UltraDoc.</strong> {{ api_message }}</div>
+                        </div>
+                        <small class="d-block mt-2">
+                            Confira no .env deste painel <code>SAAS_API_BASE_URL</code>, <code>SAAS_API_KEY</code> e <code>SAAS_API_HOST_HEADER</code>,
+                            e no UltraDoc <code>SAAS_API_KEY</code>, <code>SAAS_API_HOSTS</code>, <code>ALLOWED_HOSTS</code> e o domínio administrativo
+                            (<code>manage.py create_platform_domain</code>).
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card card-animate">
+                        <div class="card-body">
+                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Clientes</p>
+                            <h4 class="fs-22 fw-semibold mb-1">{{ summary.total }}</h4>
+                            <span class="text-muted fs-12">{{ summary.no_due_date }} sem vencimento</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card card-animate">
+                        <div class="card-body">
+                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Ativos</p>
+                            <h4 class="fs-22 fw-semibold mb-1 text-success">{{ summary.active|add:summary.expiring }}</h4>
+                            <span class="text-muted fs-12">{{ summary.expiring }} vencem em até 7 dias</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card card-animate">
+                        <div class="card-body">
+                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Em teste</p>
+                            <h4 class="fs-22 fw-semibold mb-1 text-info">{{ summary.trial }}</h4>
+                            <span class="text-muted fs-12">período de avaliação</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card card-animate">
+                        <div class="card-body">
+                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Vencidos</p>
+                            <h4 class="fs-22 fw-semibold mb-1 text-danger">{{ summary.expired }}</h4>
+                            <span class="text-muted fs-12">acesso bloqueado no UltraDoc</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card card-animate">
+                        <div class="card-body">
+                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Receita mensal prevista</p>
+                            <h4 class="fs-22 fw-semibold mb-1">R$ {{ summary.mrr|floatformat:2 }}</h4>
+                            <span class="text-muted fs-12">soma do valor mensal dos clientes não vencidos</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card card-animate">
+                        <div class="card-body">
+                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Pagamentos no mês</p>
+                            <h4 class="fs-22 fw-semibold mb-1">R$ {{ payments_month_total|floatformat:2 }}</h4>
+                            <span class="text-muted fs-12">{{ payments_month_count }} pagamento(s) com status "Pago"</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card card-animate">
+                        <div class="card-body">
+                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Armazenamento</p>
+                            <h4 class="fs-22 fw-semibold mb-1">{{ summary.storage_used_gb }} / {{ summary.storage_gb }} GB</h4>
+                            {% if summary.storage_percent is not None %}
+                            <div class="progress progress-sm mt-2">
+                                <div class="progress-bar {% if summary.storage_percent >= 90 %}bg-danger{% elif summary.storage_percent >= 75 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ summary.storage_percent }}%" aria-valuenow="{{ summary.storage_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <span class="text-muted fs-12">{{ summary.storage_percent }}% do contratado</span>
+                            {% else %}
+                            <span class="text-muted fs-12">nenhuma cota contratada</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card card-animate">
+                        <div class="card-body">
+                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Licenças contratadas</p>
+                            <h4 class="fs-22 fw-semibold mb-1">{{ summary.manager_licenses }} <small class="text-muted fs-13">manager</small> / {{ summary.staff_licenses }} <small class="text-muted fs-13">staff</small></h4>
+                            <span class="text-muted fs-12">somatório de todos os clientes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-7">
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <h5 class="card-title mb-0 flex-grow-1">Atenção: vencidos e próximos do vencimento (30 dias)</h5>
+                            <a href="{% url 'tenants:list' %}?status=expired" class="link-secondary fs-12">ver todos</a>
+                        </div>
+                        <div class="card-body">
+                            {% if attention %}
+                            <div class="table-responsive table-card">
+                                <table class="table table-hover table-centered align-middle table-nowrap mb-0">
+                                    <thead class="text-muted table-light">
+                                        <tr>
+                                            <th>Cliente</th>
+                                            <th>Situação</th>
+                                            <th>Pago até</th>
+                                            <th>Valor mensal</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for tenant in attention %}
+                                        <tr>
+                                            <td>
+                                                <span class="fw-medium">{{ tenant.client_name }}</span>
+                                                <small class="text-muted d-block">{{ tenant.schema_name }} · {{ tenant.primary_domain|default:"-" }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ tenant.status_color }}-subtle text-{{ tenant.status_color }}">{{ tenant.status_label }}</span>
+                                            </td>
+                                            <td>
+                                                {{ tenant.paid_until|date:"d/m/Y" }}
+                                                {% if tenant.days_left is not None %}
+                                                <small class="d-block {% if tenant.days_left < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                                    {% if tenant.days_left < 0 %}há {{ tenant.days_left|cut:"-" }} dia(s){% elif tenant.days_left == 0 %}vence hoje{% else %}em {{ tenant.days_left }} dia(s){% endif %}
+                                                </small>
+                                                {% endif %}
+                                            </td>
+                                            <td>R$ {{ tenant.monthly_price|floatformat:2 }}</td>
+                                            <td class="text-end">
+                                                <a href="{% url 'tenants:update' tenant.schema_name %}" class="btn btn-sm btn-soft-primary" title="Renovar / editar">
+                                                    <i class="ri-edit-line align-middle"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted mb-0">Nenhum cliente vencido ou vencendo nos próximos 30 dias.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <h5 class="card-title mb-0 flex-grow-1">Últimos pagamentos</h5>
+                            <a href="{% url 'tenants:payments-list' %}" class="link-secondary fs-12">ver todos</a>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_payments %}
+                            <div class="table-responsive table-card">
+                                <table class="table table-hover table-centered align-middle table-nowrap mb-0">
+                                    <thead class="text-muted table-light">
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Cliente</th>
+                                            <th>Valor</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for payment in recent_payments %}
+                                        <tr>
+                                            <td>{{ payment.payment_date|date:"d/m/Y" }}</td>
+                                            <td>
+                                                <a href="{% url 'tenants:detail' payment.schema_name %}">{{ payment.client_name|default:payment.schema_name }}</a>
+                                            </td>
+                                            <td>{{ payment.currency }} {{ payment.amount|floatformat:2 }}</td>
+                                            <td>
+                                                <span class="badge {% if payment.status == 'paid' %}bg-success-subtle text-success{% elif payment.status == 'pending' %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %}">{{ payment.get_status_display }}</span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted mb-0">Nenhum pagamento registrado ainda.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include "partials/footer.html" %}
+</div>
+{% endblock content %}

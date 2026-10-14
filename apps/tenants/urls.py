@@ -8,7 +8,6 @@ from .views import (
     TenantPaymentDeleteView,
     TenantPaymentEditView,
     TenantPaymentListView,
-    TenantPaymentUpdateView,
     TenantUpdateView,
 )
 
