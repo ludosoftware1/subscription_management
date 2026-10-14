@@ -57,12 +57,16 @@ O painel inicial mostra se a conexão com o UltraDoc está funcionando e, em cas
 conferir. Para falar com o UltraDoc pela rede interna do Docker em vez da porta publicada, veja o
 bloco `networks` comentado em `docker-compose.yml`.
 
-### Atualizar
+### Atualizar (deploy)
 
 ```bash
-git pull
-docker compose up -d --build
+chmod +x build.sh   # uma vez
+./build.sh
 ```
+
+O `build.sh` faz `git pull`, constrói a imagem enquanto o container antigo continua no ar, recria
+os containers, limpa imagens antigas e espera o painel responder na `APP_PORT`. Equivale a
+`git pull && docker compose up -d --build`.
 
 ### Comandos úteis
 

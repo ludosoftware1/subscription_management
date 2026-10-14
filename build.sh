@@ -1,15 +1,61 @@
 #!/usr/bin/env bash
-# Exit on error
-set -o errexit
+# Atualiza o código e sobe o painel de assinaturas no Docker.
+# Uso no servidor:  ./build.sh
+set -euo pipefail
 
-# Define a variável de ambiente APP_VERSION com o último tag do Git
-# export APP_VERSION=$(git describe --tags --abbrev=0)
+# Garante execução a partir do diretório do projeto (onde está este script).
+cd "$(dirname "$(readlink -f "$0")")"
 
-# 1. Instala todas as dependências listadas no requirements.txt
-pip install -r requirements.txt
+# Detecta o comando do Compose (plugin v2 "docker compose" ou legado "docker-compose").
+if docker compose version >/dev/null 2>&1; then
+  DC="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+  DC="docker-compose"
+else
+  echo "ERRO: Docker Compose não encontrado. Instale o plugin 'docker compose'." >&2
+  exit 1
+fi
 
-# 2. Aplica as migrações do banco de dados
-# python manage.py migrate
+if [ ! -f .env ]; then
+  echo "ERRO: .env não encontrado. Copie .env.example para .env e ajuste (SECRET_KEY, POSTGRES_*, SAAS_API_*)." >&2
+  exit 1
+fi
 
-# 3. Coleta todos os arquivos estáticos para o diretório STATIC_ROOT
-python manage.py collectstatic --no-input
+echo "==> Atualizando código (git pull)..."
+git pull --ff-only
+
+# Constrói a imagem ANTES de trocar o container: o painel antigo continua
+# servindo durante o build (pip + npm/gulp levam alguns minutos).
+echo "==> Construindo a imagem..."
+$DC build web
+
+# Recria só o que mudou. O entrypoint do container aplica as migrações,
+# garante o superusuário inicial e coleta os estáticos antes do Gunicorn subir.
+echo "==> Subindo os containers..."
+$DC up -d --remove-orphans
+
+echo "==> Limpando imagens antigas..."
+docker image prune -f >/dev/null 2>&1 || true
+
+# Aguarda o Gunicorn responder na porta publicada (APP_PORT do .env, padrão 8001).
+# O entrypoint só sobe o Gunicorn depois de migrate/collectstatic, então a
+# espera cobre essas etapas. /account/login/ é público e responde 200.
+APP_PORT="$(grep -E '^APP_PORT=' .env | tail -n1 | cut -d= -f2- | tr -d '"'"'"' \r' || true)"
+APP_PORT="${APP_PORT:-8001}"
+echo "==> Aguardando o painel responder em http://localhost:${APP_PORT}/ ..."
+for i in $(seq 1 60); do
+  CODE="$(curl -s -o /dev/null -w '%{http_code}' -H 'Host: localhost' "http://localhost:${APP_PORT}/account/login/" || true)"
+  case "$CODE" in
+    200|301|302) echo "    OK (HTTP ${CODE})"; break ;;
+  esac
+  if [ "$i" -eq 60 ]; then
+    echo "AVISO: o painel não respondeu em 2 minutos. Veja: $DC logs --tail=100 web" >&2
+    $DC ps
+    exit 1
+  fi
+  sleep 2
+done
+
+echo "==> Status:"
+$DC ps
+echo "==> Deploy concluído. Logs: $DC logs -f web"
