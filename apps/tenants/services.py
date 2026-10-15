@@ -1,6 +1,6 @@
-"""Cliente HTTP da API de clientes do UltraDoc (``/api/tenants/``).
+"""Cliente HTTP da API de clientes do SynDoc (``/api/tenants/``).
 
-O UltraDoc expõe quatro endpoints autenticados pelo cabeçalho ``X-API-Key``
+O SynDoc expõe quatro endpoints autenticados pelo cabeçalho ``X-API-Key``
 (``apps/users/api_views.py`` no projeto ultradoc):
 
 - ``GET  api/tenants/``                        lista os clientes
@@ -10,11 +10,11 @@ O UltraDoc expõe quatro endpoints autenticados pelo cabeçalho ``X-API-Key``
 
 Observações de produção (tudo roda em Docker):
 
-- Com ``django-tenants`` o UltraDoc resolve o tenant pelo ``Host`` da
+- Com ``django-tenants`` o SynDoc resolve o tenant pelo ``Host`` da
   requisição, e a API só responde nos hosts de ``SAAS_API_HOSTS``. Quando o
-  painel chama o UltraDoc pela rede interna (``http://host.docker.internal:8010``
+  painel chama o SynDoc pela rede interna (``http://host.docker.internal:8010``
   ou ``http://syndoc_web:8000``), ``SAAS_API_HOST_HEADER`` define o ``Host``
-  enviado (o domínio administrativo cadastrado no UltraDoc).
+  enviado (o domínio administrativo cadastrado no SynDoc).
 - A criação de tenant roda ``CREATE SCHEMA`` + todas as migrations e pode levar
   minutos: ``SAAS_API_CREATE_TIMEOUT`` precisa ser menor que o timeout do
   Gunicorn deste painel (ver ``docker-entrypoint.sh``).
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 class SaasApiError(Exception):
-    """Falha de comunicação ou de negócio ao falar com a API do UltraDoc."""
+    """Falha de comunicação ou de negócio ao falar com a API do SynDoc."""
 
     def __init__(self, message, status_code=None):
         super().__init__(message)
@@ -76,11 +76,11 @@ class SaasApiClient:
     def _get_url(self, path: str) -> str:
         if not self.base_url:
             raise SaasApiNotConfigured(
-                "SAAS_API_BASE_URL não está configurada. Informe a URL do UltraDoc no .env."
+                "SAAS_API_BASE_URL não está configurada. Informe a URL do SynDoc no .env."
             )
         if not self.api_key:
             raise SaasApiNotConfigured(
-                "SAAS_API_KEY não está configurada. Use a mesma chave definida no .env do UltraDoc."
+                "SAAS_API_KEY não está configurada. Use a mesma chave definida no .env do SynDoc."
             )
         return f"{self.base_url.rstrip('/')}/{path.lstrip('/')}"
 
@@ -108,20 +108,20 @@ class SaasApiClient:
             if status in (301, 302, 307, 308):
                 detail = (
                     f"a API redirecionou para {response.headers.get('Location', '?')}. "
-                    "Se o UltraDoc usa SECURE_SSL_REDIRECT, chame-o por HTTPS ou defina "
+                    "Se o SynDoc usa SECURE_SSL_REDIRECT, chame-o por HTTPS ou defina "
                     "SAAS_API_FORWARDED_PROTO=https para chamadas internas."
                 )
             elif status == 401:
-                detail = "chave de API inválida (SAAS_API_KEY diferente da configurada no UltraDoc)."
+                detail = "chave de API inválida (SAAS_API_KEY diferente da configurada no SynDoc)."
             elif status == 404:
                 detail = (
                     "endpoint não encontrado. Confira SAAS_API_BASE_URL e se o host usado "
-                    "(SAAS_API_HOST_HEADER) está em SAAS_API_HOSTS e cadastrado como domínio no UltraDoc."
+                    "(SAAS_API_HOST_HEADER) está em SAAS_API_HOSTS e cadastrado como domínio no SynDoc."
                 )
             elif status == 429:
                 detail = "limite de requisições da API atingido. Aguarde um instante e tente novamente."
             elif status >= 500:
-                detail = "erro interno no UltraDoc. Verifique os logs do container web do UltraDoc."
+                detail = "erro interno no SynDoc. Verifique os logs do container web do SynDoc."
 
         message = f"{action} (HTTP {status})"
         if detail:
@@ -145,13 +145,13 @@ class SaasApiClient:
         except requests.Timeout as exc:
             logger.warning("SaaS API: timeout (%ss) em %s %s", timeout, method, url)
             raise SaasApiTimeout(
-                f"{action}: o UltraDoc não respondeu em {timeout} segundos."
+                f"{action}: o SynDoc não respondeu em {timeout} segundos."
             ) from exc
         except requests.ConnectionError as exc:
             logger.warning("SaaS API: falha de conexão em %s %s: %s", method, url, exc)
             raise SaasApiError(
-                f"{action}: não foi possível conectar ao UltraDoc em {self.base_url}. "
-                "Confira SAAS_API_BASE_URL e se o container do UltraDoc está no ar."
+                f"{action}: não foi possível conectar ao SynDoc em {self.base_url}. "
+                "Confira SAAS_API_BASE_URL e se o container do SynDoc está no ar."
             ) from exc
         except requests.RequestException as exc:
             logger.warning("SaaS API: erro em %s %s: %s", method, url, exc)

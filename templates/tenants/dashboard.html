@@ -11,7 +11,7 @@
                     <div class="d-flex align-items-lg-center flex-lg-row flex-column">
                         <div class="flex-grow-1">
                             <h4 class="fs-16 mb-1">Painel de assinaturas</h4>
-                            <p class="text-muted mb-0">Visão geral dos clientes (tenants) do UltraDoc e dos pagamentos registrados.</p>
+                            <p class="text-muted mb-0">Visão geral dos clientes (tenants) do SynDoc e dos pagamentos registrados.</p>
                         </div>
                         <div class="mt-3 mt-lg-0 d-flex gap-2">
                             <a href="{% url 'tenants:list' %}" class="btn btn-soft-secondary">
@@ -46,17 +46,17 @@
                     {% if api_ok %}
                     <div class="alert alert-success border-0 d-flex align-items-center" role="alert">
                         <i class="ri-checkbox-circle-line fs-18 me-2"></i>
-                        <div>UltraDoc conectado: <strong>{{ api_base_url }}</strong>{% if api_host_header %} (Host: {{ api_host_header }}){% endif %}.</div>
+                        <div>SynDoc conectado: <strong>{{ api_base_url }}</strong>{% if api_host_header %} (Host: {{ api_host_header }}){% endif %}.</div>
                     </div>
                     {% else %}
                     <div class="alert alert-danger border-0" role="alert">
                         <div class="d-flex align-items-center">
                             <i class="ri-error-warning-line fs-18 me-2"></i>
-                            <div><strong>Sem comunicação com o UltraDoc.</strong> {{ api_message }}</div>
+                            <div><strong>Sem comunicação com o SynDoc.</strong> {{ api_message }}</div>
                         </div>
                         <small class="d-block mt-2">
                             Confira no .env deste painel <code>SAAS_API_BASE_URL</code>, <code>SAAS_API_KEY</code> e <code>SAAS_API_HOST_HEADER</code>,
-                            e no UltraDoc <code>SAAS_API_KEY</code>, <code>SAAS_API_HOSTS</code>, <code>ALLOWED_HOSTS</code> e o domínio administrativo
+                            e no SynDoc <code>SAAS_API_KEY</code>, <code>SAAS_API_HOSTS</code>, <code>ALLOWED_HOSTS</code> e o domínio administrativo
                             (<code>manage.py create_platform_domain</code>).
                         </small>
                     </div>
@@ -97,7 +97,7 @@
                         <div class="card-body">
                             <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Vencidos</p>
                             <h4 class="fs-22 fw-semibold mb-1 text-danger">{{ summary.expired }}</h4>
-                            <span class="text-muted fs-12">acesso bloqueado no UltraDoc</span>
+                            <span class="text-muted fs-12">acesso bloqueado no SynDoc</span>
                         </div>
                     </div>
                 </div>

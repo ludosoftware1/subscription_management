@@ -21,9 +21,9 @@ from .utils import compute_status, enrich_tenant, summarize_tenants
 TODAY = date(2026, 10, 14)
 
 API_SETTINGS = {
-    "SAAS_API_BASE_URL": "http://ultradoc.test:8000",
+    "SAAS_API_BASE_URL": "http://syndoc.test:8000",
     "SAAS_API_KEY": "k" * 40,
-    "SAAS_API_HOST_HEADER": "admin.ultradoc.test",
+    "SAAS_API_HOST_HEADER": "admin.syndoc.test",
     "SAAS_API_FORWARDED_PROTO": "https",
 }
 
@@ -41,7 +41,7 @@ def _tenant(**overrides):
         "storage_gb": 100,
         "storage_used_gb": 25.5,
         "storage_used_percent": 25.5,
-        "primary_domain": "a.ultradoc.test",
+        "primary_domain": "a.syndoc.test",
         "domains": [],
     }
     base.update(overrides)
@@ -104,7 +104,7 @@ class TenantFormTests(TestCase):
             "client_name": "Prefeitura XYZ",
             "email": "admin@xyz.gov.br",
             "password": "SenhaForte123",
-            "primary_domain": "xyz.ultradoc.test",
+            "primary_domain": "xyz.syndoc.test",
             "manager_licenses": 1,
             "staff_licenses": 5,
             "storage_gb": 50,
@@ -114,9 +114,9 @@ class TenantFormTests(TestCase):
         return data
 
     def test_valido_normaliza_dominio(self):
-        form = TenantForm(self._data(primary_domain="HTTPS://Xyz.UltraDoc.test:443/"))
+        form = TenantForm(self._data(primary_domain="HTTPS://Xyz.SynDoc.test:443/"))
         self.assertTrue(form.is_valid(), form.errors)
-        self.assertEqual(form.cleaned_data["primary_domain"], "xyz.ultradoc.test")
+        self.assertEqual(form.cleaned_data["primary_domain"], "xyz.syndoc.test")
 
     def test_schema_invalido(self):
         for bad in ("pref-xyz", "1abc", "public", "pg_x", "pref xyz"):
@@ -154,9 +154,9 @@ class SaasApiClientTests(TestCase):
         tenants = SaasApiClient().list_tenants()
         self.assertEqual(len(tenants), 1)
         args, kwargs = request.call_args
-        self.assertEqual(args, ("GET", "http://ultradoc.test:8000/api/tenants/"))
+        self.assertEqual(args, ("GET", "http://syndoc.test:8000/api/tenants/"))
         self.assertEqual(kwargs["headers"]["X-API-Key"], "k" * 40)
-        self.assertEqual(kwargs["headers"]["Host"], "admin.ultradoc.test")
+        self.assertEqual(kwargs["headers"]["Host"], "admin.syndoc.test")
         self.assertEqual(kwargs["headers"]["X-Forwarded-Proto"], "https")
         self.assertFalse(kwargs["allow_redirects"])
 
@@ -186,7 +186,7 @@ class SaasApiClientTests(TestCase):
 
     @mock.patch("apps.tenants.services.requests.request")
     def test_redirect_explica_ssl(self, request):
-        request.return_value = _response(301, headers={"Location": "https://admin.ultradoc.test/api/tenants/"})
+        request.return_value = _response(301, headers={"Location": "https://admin.syndoc.test/api/tenants/"})
         with self.assertRaises(SaasApiError) as ctx:
             SaasApiClient().list_tenants()
         self.assertIn("SECURE_SSL_REDIRECT", str(ctx.exception))
@@ -231,7 +231,7 @@ class ViewTests(TestCase):
         self.assertTrue(response.context["api_ok"])
         self.assertEqual(response.context["summary"]["expired"], 1)
         self.assertEqual([t["schema_name"] for t in response.context["attention"]], ["vencido"])
-        self.assertContains(response, "UltraDoc conectado")
+        self.assertContains(response, "SynDoc conectado")
 
     @mock.patch("apps.tenants.views.SaasApiClient.list_tenants", side_effect=SaasApiError("API fora do ar"))
     def test_dashboard_sem_api(self, list_tenants):
@@ -244,11 +244,11 @@ class ViewTests(TestCase):
     def test_lista_com_filtros(self, list_tenants):
         list_tenants.return_value = [
             _tenant(),
-            _tenant(schema_name="teste", client_name="Em Teste", on_trial=True, primary_domain="t.ultradoc.test"),
+            _tenant(schema_name="teste", client_name="Em Teste", on_trial=True, primary_domain="t.syndoc.test"),
         ]
         response = self.client.get(reverse("tenants:list"), {"status": "trial"})
         self.assertEqual([t["schema_name"] for t in response.context["tenants"]], ["teste"])
-        response = self.client.get(reverse("tenants:list"), {"q": "a.ultradoc"})
+        response = self.client.get(reverse("tenants:list"), {"q": "a.syndoc"})
         self.assertEqual([t["schema_name"] for t in response.context["tenants"]], ["cliente_a"])
 
     @mock.patch("apps.tenants.views.SaasApiClient.create_tenant")
@@ -261,7 +261,7 @@ class ViewTests(TestCase):
                 "client_name": "Novo",
                 "email": "admin@novo.gov.br",
                 "password": "SenhaForte123",
-                "primary_domain": "novo.ultradoc.test",
+                "primary_domain": "novo.syndoc.test",
                 "monthly_price": "10.00",
                 "manager_licenses": 1,
                 "staff_licenses": 2,
@@ -272,7 +272,7 @@ class ViewTests(TestCase):
         )
         self.assertRedirects(response, reverse("tenants:detail", args=["novo"]), fetch_redirect_response=False)
         payload = create_tenant.call_args.args[0]
-        self.assertEqual(payload["domain"], "novo.ultradoc.test")
+        self.assertEqual(payload["domain"], "novo.syndoc.test")
         self.assertEqual(payload["paid_until"], "2027-01-31")
         self.assertTrue(payload["on_trial"])
         self.assertEqual(payload["monthly_price"], "10.00")
@@ -285,7 +285,7 @@ class ViewTests(TestCase):
                 reverse("tenants:create"),
                 {
                     "schema_name": "novo", "client_name": "Novo", "email": "admin@novo.gov.br", "password": "SenhaForte123",
-                    "primary_domain": "novo.ultradoc.test",
+                    "primary_domain": "novo.syndoc.test",
                 },
                 follow=True,
             )
@@ -298,7 +298,7 @@ class ViewTests(TestCase):
             reverse("tenants:create"),
             {
                 "schema_name": "novo", "client_name": "Novo", "email": "admin@novo.gov.br", "password": "SenhaForte123",
-                "primary_domain": "novo.ultradoc.test",
+                "primary_domain": "novo.syndoc.test",
             },
         )
         self.assertEqual(response.status_code, 200)
@@ -311,13 +311,13 @@ class ViewTests(TestCase):
         response = self.client.get(reverse("tenants:update", args=["cliente_a"]))
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["is_update"])
-        self.assertEqual(response.context["form"].initial["primary_domain"], "a.ultradoc.test")
+        self.assertEqual(response.context["form"].initial["primary_domain"], "a.syndoc.test")
 
         response = self.client.post(
             reverse("tenants:update", args=["cliente_a"]),
             {
                 "schema_name": "cliente_a", "client_name": "Cliente A renomeado",
-                "primary_domain": "a.ultradoc.test", "paid_until": "2027-06-30", "monthly_price": "250.00",
+                "primary_domain": "a.syndoc.test", "paid_until": "2027-06-30", "monthly_price": "250.00",
                 "manager_licenses": 3, "staff_licenses": 10, "storage_gb": 100,
             },
         )

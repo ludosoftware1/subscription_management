@@ -1,4 +1,4 @@
-"""Enriquecimento dos dados de tenant devolvidos pela API do UltraDoc."""
+"""Enriquecimento dos dados de tenant devolvidos pela API do SynDoc."""
 
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
@@ -38,7 +38,7 @@ def parse_decimal(value):
 
 
 def compute_status(tenant: dict, today=None) -> str:
-    """Espelha a regra do UltraDoc (``TenantExpirationMiddleware``): com
+    """Espelha a regra do SynDoc (``TenantExpirationMiddleware``): com
     ``paid_until`` no passado o acesso do cliente é bloqueado, mesmo em teste;
     sem ``paid_until`` o acesso nunca expira."""
     today = today or date.today()
@@ -72,7 +72,7 @@ def enrich_tenant(tenant: dict, today=None) -> dict:
 
 def summarize_tenants(tenants: list) -> dict:
     """KPIs do painel inicial a partir de UMA chamada de listagem (a API do
-    UltraDoc limita a 20 requisições por minuto por IP; nada de N+1)."""
+    SynDoc limita a 20 requisições por minuto por IP; nada de N+1)."""
     summary = {
         "total": len(tenants),
         "active": 0,

@@ -62,7 +62,7 @@
                                 <dd class="col-sm-7">
                                     <span class="badge bg-{{ tenant.status_color }}-subtle text-{{ tenant.status_color }}">{{ tenant.status_label }}</span>
                                     {% if tenant.status == "expired" %}
-                                        <small class="text-danger d-block">Acesso bloqueado no UltraDoc desde o vencimento.</small>
+                                        <small class="text-danger d-block">Acesso bloqueado no SynDoc desde o vencimento.</small>
                                     {% elif tenant.days_left is not None %}
                                         <small class="text-muted d-block">{{ tenant.days_left }} dia(s) restante(s)</small>
                                     {% endif %}

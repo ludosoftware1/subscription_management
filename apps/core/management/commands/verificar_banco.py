@@ -1,38 +1,48 @@
-"""Recusa migrar num banco que não é o deste painel.
+"""Prepara e confere o banco antes do ``migrate`` (roda no entrypoint).
 
-O painel precisa de um banco PRÓPRIO. Apontar ``POSTGRES_DB`` para o banco do
-UltraDoc é um erro fácil (mesmo servidor, mesmo usuário ``ultradoc``) e grave:
-o ``migrate`` criaria as tabelas do painel no schema ``public`` do UltraDoc.
+O painel não pode gravar no schema ``public`` do SynDoc: lá ficam
+``users_client``/``users_domain`` (o cadastro de todos os clientes) e o
+histórico de migrations do django-tenants. Duas formas válidas de configurar:
 
-Lá o ``django.contrib.auth`` é app de tenant: o django-tenants REGISTRA as
-migrations do ``auth`` em ``public.django_migrations``, mas só cria
-``auth_user`` dentro do schema de cada cliente. O ``migrate`` deste painel então
-pula o ``auth`` ("já aplicado") e falha com
-``relation "auth_user" does not exist`` -- depois de já ter criado as tabelas que
-não dependem dele. Este comando roda ANTES do ``migrate`` no entrypoint.
+1. Banco exclusivo do painel (``POSTGRES_DB`` próprio, ``POSTGRES_SCHEMA`` vazio).
+2. Mesmo banco do SynDoc com ``POSTGRES_SCHEMA`` (ex.: ``painel_assinaturas``):
+   este comando cria o schema e o ``search_path`` da conexão faz todas as
+   tabelas do painel irem para ele, sem tocar no ``public``.
+
+Sem uma das duas, apontar para o banco do SynDoc fazia o ``migrate`` falhar com
+``relation "auth_user" does not exist``: no SynDoc o ``auth`` é app de tenant, o
+django-tenants REGISTRA as migrations dele em ``public.django_migrations`` mas só
+cria ``auth_user`` no schema de cada cliente.
 """
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
 
-# Tabelas do app ``users`` do UltraDoc (Client/Domain do django-tenants).
-TABELAS_ULTRADOC = ("users_client", "users_domain")
+# Tabelas do app ``users`` do SynDoc (Client/Domain do django-tenants).
+TABELAS_SYNDOC = ("users_client", "users_domain")
 
 
 class Command(BaseCommand):
-    help = "Aborta se o banco configurado for o do UltraDoc ou estiver com o histórico de migrations inconsistente."
+    help = "Cria o schema do painel (POSTGRES_SCHEMA) e aborta se o banco/schema for o do SynDoc."
 
     def handle(self, *args, **options):
         banco = connection.settings_dict.get("NAME")
+        schema = getattr(settings, "POSTGRES_SCHEMA", "") or ""
+
+        if schema and connection.vendor == "postgresql":
+            self._preparar_schema(banco, schema)
+
+        onde = f"schema '{schema}' do banco '{banco}'" if schema else f"banco '{banco}'"
         tabelas = set(connection.introspection.table_names())
 
-        do_ultradoc = sorted(t for t in TABELAS_ULTRADOC if t in tabelas)
-        if do_ultradoc:
+        do_syndoc = sorted(t for t in TABELAS_SYNDOC if t in tabelas)
+        if do_syndoc:
             raise CommandError(
-                f"O banco '{banco}' é o do UltraDoc (tem {', '.join(do_ultradoc)}). "
-                "O painel precisa de um banco próprio: crie um (ex.: "
-                "`sudo -u postgres createdb --owner=ultradoc subscription_management`), "
-                "ajuste POSTGRES_DB no .env e recrie o container."
+                f"O {onde} é o do SynDoc (tem {', '.join(do_syndoc)}). NÃO apague o schema public: ele guarda "
+                "o cadastro de todos os clientes. Use um schema próprio no mesmo banco "
+                "(POSTGRES_SCHEMA=painel_assinaturas no .env) ou um banco exclusivo "
+                "(`sudo -u postgres createdb --owner=ultradoc subscription_management`) e recrie o container."
             )
 
         if "django_migrations" in tabelas and "auth_user" not in tabelas:
@@ -40,9 +50,26 @@ class Command(BaseCommand):
                 cursor.execute("SELECT 1 FROM django_migrations WHERE app = %s LIMIT 1", ["auth"])
                 if cursor.fetchone():
                     raise CommandError(
-                        f"O banco '{banco}' registra as migrations do auth como aplicadas, mas a tabela "
-                        "auth_user não existe. Ele provavelmente pertence a outro sistema "
-                        "(django-tenants). Use um banco próprio para o painel em POSTGRES_DB."
+                        f"O {onde} registra as migrations do auth como aplicadas, mas a tabela auth_user "
+                        "não existe: ele pertence a outro sistema (django-tenants). Use POSTGRES_SCHEMA "
+                        "ou um banco exclusivo para o painel."
                     )
 
-        self.stdout.write(self.style.SUCCESS(f"Banco '{banco}' OK para o painel."))
+        self.stdout.write(self.style.SUCCESS(f"{onde[0].upper()}{onde[1:]} OK para o painel."))
+
+    def _preparar_schema(self, banco, schema):
+        with connection.cursor() as cursor:
+            # Se o banco é o do SynDoc, o schema não pode ser o de um cliente.
+            cursor.execute("SELECT to_regclass('public.users_client') IS NOT NULL")
+            if cursor.fetchone()[0]:
+                cursor.execute("SELECT 1 FROM public.users_client WHERE schema_name = %s", [schema])
+                if cursor.fetchone():
+                    raise CommandError(
+                        f"POSTGRES_SCHEMA='{schema}' é o schema de um cliente do SynDoc. Escolha outro nome."
+                    )
+            cursor.execute("SELECT 1 FROM pg_namespace WHERE nspname = %s", [schema])
+            if cursor.fetchone():
+                return
+            # Nome já validado nas settings (regex); aspas por garantia.
+            cursor.execute(f'CREATE SCHEMA "{schema}"')
+        self.stdout.write(f"Schema '{schema}' criado no banco '{banco}'.")

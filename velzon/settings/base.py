@@ -1,6 +1,9 @@
 import os
+import re
 import environ
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 
 # Inicializa o django-environ
 env = environ.Env(
@@ -38,21 +41,47 @@ NOTIFICATION_API_URL = env('NOTIFICATION_API_URL', default='https://notification
 API_AUTH_TOKEN = env('API_AUTH_TOKEN', default='default-api-key-from-settings')
 NOTIFICATION_WEBHOOK_TOKEN = env('NOTIFICATION_WEBHOOK_TOKEN', default='default-webhook-token-from-settings')
 
-# --- Integração com o UltraDoc (API /api/tenants/, ver apps/tenants/services.py) ---
-# URL por onde este servidor alcança o UltraDoc (pública ou interna do Docker).
+# --- Integração com o SynDoc (API /api/tenants/, ver apps/tenants/services.py) ---
+# URL por onde este servidor alcança o SynDoc (pública ou interna do Docker).
 SAAS_API_BASE_URL = env('SAAS_API_BASE_URL', default=None)
-# Mesma chave do SAAS_API_KEY no .env do UltraDoc.
+# Mesma chave do SAAS_API_KEY no .env do SynDoc.
 SAAS_API_KEY = env('SAAS_API_KEY', default=None)
-# Host administrativo cadastrado no UltraDoc (SAAS_API_HOSTS de lá). Enviado no
+# Host administrativo cadastrado no SynDoc (SAAS_API_HOSTS de lá). Enviado no
 # cabeçalho Host quando a chamada é interna (ex.: http://host.docker.internal:8010).
 SAAS_API_HOST_HEADER = env('SAAS_API_HOST_HEADER', default=None)
-# "https" faz o UltraDoc tratar a chamada interna como segura (SECURE_SSL_REDIRECT).
+# "https" faz o SynDoc tratar a chamada interna como segura (SECURE_SSL_REDIRECT).
 SAAS_API_FORWARDED_PROTO = env('SAAS_API_FORWARDED_PROTO', default=None)
 SAAS_API_TIMEOUT = env.int('SAAS_API_TIMEOUT', default=15)
-# Criar tenant = CREATE SCHEMA + todas as migrations do UltraDoc; pode levar minutos.
+# Criar tenant = CREATE SCHEMA + todas as migrations do SynDoc; pode levar minutos.
 # Deve ser MENOR que o timeout do Gunicorn deste painel (GUNICORN_TIMEOUT).
 SAAS_API_CREATE_TIMEOUT = env.int('SAAS_API_CREATE_TIMEOUT', default=300)
 SAAS_API_VERIFY_SSL = env.bool('SAAS_API_VERIFY_SSL', default=True)
+
+# --- Schema próprio no Postgres ------------------------------------------
+# Permite que o painel fique no MESMO banco do SynDoc sem tocar no schema
+# public dele (que guarda users_client/users_domain de todos os clientes).
+# Com POSTGRES_SCHEMA definido, todas as tabelas do painel vão para esse schema
+# (search_path) e o entrypoint o cria antes do migrate (verificar_banco).
+# Vazio = usa o schema padrão do banco (o certo para um banco exclusivo do painel).
+POSTGRES_SCHEMA = env('POSTGRES_SCHEMA', default='').strip()
+if POSTGRES_SCHEMA:
+    if not re.fullmatch(r'[a-z_][a-z0-9_]{0,62}', POSTGRES_SCHEMA):
+        raise ImproperlyConfigured(
+            "POSTGRES_SCHEMA deve ter só letras minúsculas, números e _ (máx. 63), começando por letra ou _."
+        )
+    if POSTGRES_SCHEMA == 'public' or POSTGRES_SCHEMA.startswith('pg_'):
+        raise ImproperlyConfigured(
+            "POSTGRES_SCHEMA não pode ser 'public' nem começar com 'pg_'; use um nome próprio, ex.: painel_assinaturas."
+        )
+
+
+def aplicar_schema_postgres(database):
+    """Fixa o search_path da conexão no schema do painel (só Postgres)."""
+    if POSTGRES_SCHEMA and 'postgresql' in database.get('ENGINE', ''):
+        options = database.setdefault('OPTIONS', {})
+        options['options'] = f"-c search_path={POSTGRES_SCHEMA}"
+    return database
+
 
 # --- Configurações Comuns do Django (copiadas do seu settings.py) ---
 INSTALLED_APPS = [
@@ -213,7 +242,7 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        # Falhas de comunicação com a API do UltraDoc aparecem no `docker compose logs web`.
+        # Falhas de comunicação com a API do SynDoc aparecem no `docker compose logs web`.
         'apps.tenants': {
             'handlers': ['console'],
             'level': 'INFO',

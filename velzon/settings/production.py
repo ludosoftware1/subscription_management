@@ -39,6 +39,7 @@ else:
     }
 DATABASES['default']['CONN_MAX_AGE'] = env.int('DB_CONN_MAX_AGE', default=60)
 DATABASES['default']['CONN_HEALTH_CHECKS'] = True
+aplicar_schema_postgres(DATABASES['default'])
 
 # --- E-mail --------------------------------------------------------------
 # A recuperação de senha usa a API externa de notificação (apps.email_app),

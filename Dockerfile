@@ -43,5 +43,5 @@ ENV DJANGO_SETTINGS_MODULE=velzon.settings.production \
 EXPOSE 8000
 
 # Migrações, superusuário inicial, collectstatic e Gunicorn (timeout compatível
-# com a criação de tenant no UltraDoc) ficam no entrypoint.
+# com a criação de tenant no SynDoc) ficam no entrypoint.
 CMD ["sh", "docker-entrypoint.sh"]

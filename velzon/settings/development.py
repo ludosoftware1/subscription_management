@@ -27,3 +27,4 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+aplicar_schema_postgres(DATABASES['default'])

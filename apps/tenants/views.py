@@ -1,7 +1,7 @@
-"""Telas de gestão dos clientes (tenants) do UltraDoc.
+"""Telas de gestão dos clientes (tenants) do SynDoc.
 
 Nenhum dado de cliente fica neste banco: tudo vem da API ``/api/tenants/`` do
-UltraDoc (``SaasApiClient``). Só os pagamentos (``TenantPayment``) são locais.
+SynDoc (``SaasApiClient``). Só os pagamentos (``TenantPayment``) são locais.
 """
 
 import logging
@@ -162,7 +162,7 @@ class TenantCreateView(LoginRequiredMixin, FormView):
             logger.warning("Timeout ao criar tenant %s: %s", payload["schema_name"], exc)
             messages.warning(
                 self.request,
-                f"{exc} A criação roda as migrations do novo schema e pode ter continuado no UltraDoc: "
+                f"{exc} A criação roda as migrations do novo schema e pode ter continuado no SynDoc: "
                 "confira se o cliente apareceu na lista antes de tentar de novo. "
                 f"Senha informada para o super usuário: {password}",
             )
@@ -173,7 +173,7 @@ class TenantCreateView(LoginRequiredMixin, FormView):
 
         messages.success(
             self.request,
-            f"Cliente “{created.get('client_name') or payload['client_name']}” criado no UltraDoc "
+            f"Cliente “{created.get('client_name') or payload['client_name']}” criado no SynDoc "
             f"(schema {created.get('schema_name') or payload['schema_name']}, domínio {payload['domain']}). "
             f"Super usuário: {created.get('superuser_email') or payload['email']} — senha: {password}. "
             "Guarde a senha: ela não é exibida novamente.",
@@ -235,7 +235,7 @@ class TenantUpdateView(LoginRequiredMixin, FormView):
         except SaasApiError as exc:
             messages.error(self.request, str(exc))
             return self.form_invalid(form)
-        messages.success(self.request, "Cliente atualizado no UltraDoc.")
+        messages.success(self.request, "Cliente atualizado no SynDoc.")
         return redirect(self.get_success_url())
 
 

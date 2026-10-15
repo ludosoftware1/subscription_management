@@ -24,11 +24,11 @@ class VerificarBancoTest(TransactionTestCase):
     def test_banco_do_painel_passa(self):
         self.assertIn("OK para o painel", self._rodar())
 
-    def test_recusa_banco_do_ultradoc(self):
+    def test_recusa_banco_do_syndoc(self):
         with connection.cursor() as cursor:
             cursor.execute("CREATE TABLE users_client (id integer)")
         try:
-            with self.assertRaisesMessage(CommandError, "é o do UltraDoc"):
+            with self.assertRaisesMessage(CommandError, "é o do SynDoc"):
                 self._rodar()
         finally:
             with connection.cursor() as cursor:

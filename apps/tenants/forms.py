@@ -2,6 +2,7 @@ import re
 from datetime import date
 
 from django import forms
+from django.conf import settings
 
 from .models import TenantPayment
 
@@ -26,7 +27,7 @@ class TenantForm(forms.Form):
     schema_name = forms.CharField(
         label="Identificador do cliente",
         max_length=63,
-        help_text="Nome do schema no banco do UltraDoc: letras minúsculas, números e _ (ex.: prefeitura_xyz).",
+        help_text="Nome do schema no banco do SynDoc: letras minúsculas, números e _ (ex.: prefeitura_xyz).",
         widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "ex.: prefeitura_xyz"}),
     )
     client_name = forms.CharField(
@@ -47,8 +48,8 @@ class TenantForm(forms.Form):
     primary_domain = forms.CharField(
         label="Domínio principal",
         max_length=253,
-        help_text="Host pelo qual o cliente acessa o UltraDoc (ex.: cliente.ultradoc.com.br), sem http:// nem porta.",
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "ex.: cliente.ultradoc.com.br"}),
+        help_text="Host pelo qual o cliente acessa o SynDoc (ex.: cliente.syndoc.com.br), sem http:// nem porta.",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "ex.: cliente.syndoc.com.br"}),
     )
     manager_licenses = forms.IntegerField(
         label="Licenças Manager",
@@ -90,7 +91,7 @@ class TenantForm(forms.Form):
     paid_until = forms.DateField(
         label="Pago até",
         required=False,
-        help_text="Vazio = acesso sem vencimento. Data passada bloqueia o acesso do cliente no UltraDoc.",
+        help_text="Vazio = acesso sem vencimento. Data passada bloqueia o acesso do cliente no SynDoc.",
         widget=forms.DateInput(
             attrs={"class": "form-control", "type": "date"},
         ),
@@ -116,13 +117,15 @@ class TenantForm(forms.Form):
             )
         if value in RESERVED_SCHEMAS or value.startswith("pg_"):
             raise forms.ValidationError("Este identificador é reservado pelo banco de dados.")
+        if value == getattr(settings, "POSTGRES_SCHEMA", ""):
+            raise forms.ValidationError("Este identificador é o schema do próprio painel no banco do SynDoc.")
         return value
 
     def clean_primary_domain(self):
         value = normalize_domain(self.cleaned_data.get("primary_domain"))
         if not HOSTNAME_RE.match(value):
             raise forms.ValidationError(
-                "Informe um host válido, sem http:// nem porta (ex.: cliente.ultradoc.com.br)."
+                "Informe um host válido, sem http:// nem porta (ex.: cliente.syndoc.com.br)."
             )
         return value
 

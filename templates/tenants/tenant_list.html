@@ -1,6 +1,6 @@
 {% extends "partials/base.html" %}
 {% load static %}
-{% block title %}Clientes do UltraDoc{% endblock title %}
+{% block title %}Clientes do SynDoc{% endblock title %}
 
 {% block content %}
 <div class="main-content">
@@ -10,8 +10,8 @@
                 <div class="col-12">
                     <div class="d-flex align-items-lg-center flex-lg-row flex-column">
                         <div class="flex-grow-1">
-                            <h4 class="fs-16 mb-1">Clientes do UltraDoc</h4>
-                            <p class="text-muted mb-0">Tenants cadastrados no UltraDoc: situação da assinatura, licenças, armazenamento e pagamentos.</p>
+                            <h4 class="fs-16 mb-1">Clientes do SynDoc</h4>
+                            <p class="text-muted mb-0">Tenants cadastrados no SynDoc: situação da assinatura, licenças, armazenamento e pagamentos.</p>
                         </div>
                         <div class="mt-3 mt-lg-0 d-flex gap-2">
                             <a href="{% url 'tenants:payments-list' %}" class="btn btn-soft-secondary">
@@ -145,11 +145,11 @@
                                 </table>
                             </div>
                             {% elif error_message %}
-                            <p class="text-muted mb-0">Não foi possível carregar os clientes do UltraDoc. Corrija a configuração da API e recarregue a página.</p>
+                            <p class="text-muted mb-0">Não foi possível carregar os clientes do SynDoc. Corrija a configuração da API e recarregue a página.</p>
                             {% elif filter_q or filter_status %}
                             <p class="text-muted mb-0">Nenhum cliente corresponde ao filtro.</p>
                             {% else %}
-                            <p class="text-muted mb-0">Nenhum cliente cadastrado no UltraDoc ainda. Use “Novo cliente” para criar o primeiro.</p>
+                            <p class="text-muted mb-0">Nenhum cliente cadastrado no SynDoc ainda. Use “Novo cliente” para criar o primeiro.</p>
                             {% endif %}
                         </div>
                     </div>
