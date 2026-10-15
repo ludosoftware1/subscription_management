@@ -3,6 +3,10 @@
 # A cada inicialização: migrações, superusuário inicial (opcional), estáticos e Gunicorn.
 set -e
 
+echo "==> Conferindo o banco de dados..."
+# Aborta se POSTGRES_DB apontar para o banco do UltraDoc (ver o comando).
+python manage.py verificar_banco
+
 echo "==> Aplicando migrações..."
 python manage.py migrate --noinput
 
