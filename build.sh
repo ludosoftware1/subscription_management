@@ -46,9 +46,14 @@ APP_PORT="$(grep -E '^APP_PORT=' .env | tail -n1 | cut -d= -f2- | tr -d '"'"'"' 
 APP_PORT="${APP_PORT:-8001}"
 echo "==> Aguardando o painel responder em http://localhost:${APP_PORT}/ ..."
 for i in $(seq 1 60); do
-  CODE="$(curl -s -o /dev/null -w '%{http_code}' -H 'Host: localhost' "http://localhost:${APP_PORT}/account/login/" || true)"
+  # X-Forwarded-Proto: https simula o proxy com TLS (senão SECURE_SSL_REDIRECT devolve 301).
+  CODE="$(curl -s -o /dev/null -w '%{http_code}' -H 'Host: localhost' -H 'X-Forwarded-Proto: https' "http://localhost:${APP_PORT}/account/login/" || true)"
   case "$CODE" in
-    200|301|302) echo "    OK (HTTP ${CODE})"; break ;;
+    200) echo "    OK (HTTP ${CODE})"; break ;;
+    500)
+      echo "ERRO: o painel respondeu 500. Últimas linhas do log:" >&2
+      $DC logs --tail=60 web >&2
+      exit 1 ;;
   esac
   # Container reiniciando = o entrypoint falhou (banco, migrate...). Não adianta esperar.
   STATE="$(docker inspect -f '{{.State.Status}} {{.RestartCount}}' subscription_web 2>/dev/null || true)"
