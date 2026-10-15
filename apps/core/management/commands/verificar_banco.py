@@ -38,11 +38,17 @@ class Command(BaseCommand):
 
         do_syndoc = sorted(t for t in TABELAS_SYNDOC if t in tabelas)
         if do_syndoc:
+            situacao = (
+                "POSTGRES_SCHEMA está VAZIO neste container. "
+                if not schema
+                else ""
+            )
             raise CommandError(
-                f"O {onde} é o do SynDoc (tem {', '.join(do_syndoc)}). NÃO apague o schema public: ele guarda "
-                "o cadastro de todos os clientes. Use um schema próprio no mesmo banco "
+                f"O {onde} é o do SynDoc (tem {', '.join(do_syndoc)}). {situacao}NÃO apague o schema public: "
+                "ele guarda o cadastro de todos os clientes. Use um schema próprio no mesmo banco "
                 "(POSTGRES_SCHEMA=painel_assinaturas no .env) ou um banco exclusivo "
-                "(`sudo -u postgres createdb --owner=ultradoc subscription_management`) e recrie o container."
+                "(`sudo -u postgres createdb --owner=ultradoc subscription_management`) e recrie o container "
+                "(`docker compose up -d --force-recreate web` ou ./build.sh; um restart não relê o .env)."
             )
 
         if "django_migrations" in tabelas and "auth_user" not in tabelas:
