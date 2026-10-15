@@ -231,16 +231,41 @@ ACCOUNT_UNIQUE_EMAIL = True
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'padrao': {
+            'format': '%(asctime)s %(levelname)s %(name)s: %(message)s',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'padrao',
         },
     },
+    # Qualquer logger sem configuração própria (warnings e erros) vai para o console.
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
     'loggers': {
+        # Sem isto, com DEBUG=False o Django manda o traceback de um erro 500 SÓ para
+        # o AdminEmailHandler (o console padrão do Django exige DEBUG=True) -- e o erro
+        # sumia do `docker compose logs web`. Agora sai sempre no console do container.
+        'django': {
+            'handlers': ['console'],
+            'level': env('DJANGO_LOG_LEVEL', default='INFO'),
+            'propagate': False,
+        },
+        # 404 de robôs procurando /.env, /.git etc. não precisa poluir o log.
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
         'velzon.adapters': {
             'handlers': ['console'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
         },
         # Falhas de comunicação com a API do SynDoc aparecem no `docker compose logs web`.
         'apps.tenants': {
