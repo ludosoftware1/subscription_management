@@ -38,9 +38,10 @@ services:
       # Porta interna do Gunicorn (fixa). A publicada no host é APP_PORT.
       PORT: "8000"
     ports:
-      # Única porta publicada no host. O SynDoc costuma usar 8000/8010; este
-      # painel sobe por padrão na 8001.
-      - "${APP_PORT:-8001}:8000"
+      # Única porta publicada no host (APP_PORT, padrão 8001). APP_BIND=127.0.0.1
+      # deixa o painel acessível só pelo proxy do próprio servidor (Apache): sem
+      # isso a porta fica aberta para a internet e o Docker passa por cima do ufw.
+      - "${APP_BIND:-0.0.0.0}:${APP_PORT:-8001}:8000"
     volumes:
       # Anexos (notas fiscais dos pagamentos). Sem volume, somem ao recriar o container.
       - media_data:/app/media
