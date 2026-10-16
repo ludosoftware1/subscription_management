@@ -223,8 +223,8 @@ ACCOUNT_FORMS = {
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
 ]
-# Configurações do Allauth para login com e-mail
-ACCOUNT_LOGIN_METHODS = ['email']
+# Configurações do Allauth para login com e-mail ou nome de usuário
+ACCOUNT_LOGIN_METHODS = {'email', 'username'}
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 ACCOUNT_UNIQUE_EMAIL = True
 
