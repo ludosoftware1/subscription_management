@@ -77,6 +77,27 @@ O `build.sh` faz `git pull`, constrói a imagem enquanto o container antigo cont
 os containers, limpa imagens antigas e espera o painel responder na `APP_PORT`. Equivale a
 `git pull && docker compose up -d --build`.
 
+### Replicar o servidor (Apache / proxy reverso)
+
+O Apache do servidor faz o proxy reverso do painel e dos demais subdomínios (wildcard). Para
+levar essa configuração a um servidor Ubuntu novo:
+
+```bash
+# 1. No servidor de ORIGEM (só leitura; gera deploy/origem/ e o pacote de certificados)
+sudo ./deploy/coletar_config.sh --com-certificados
+scp deploy/certificados-origem.tar.gz usuario@servidor-novo:~/   # chaves privadas: fora do git
+
+# 2. No servidor NOVO, com o projeto clonado e deploy/origem/ presente (git ou scp)
+sudo ./deploy/provisionar_servidor.sh --certificados ~/certificados-origem.tar.gz
+cp .env.example .env   # ou traga o .env da origem
+./build.sh
+```
+
+`deploy/origem/relatorio.txt` resume o que existe na origem (vhosts, destinos do proxy,
+certificados, firewall, portas, containers). O `provisionar_servidor.sh` instala Apache, Certbot
+e Docker, copia os vhosts, habilita os mesmos módulos/sites e valida com `configtest` antes de
+recarregar; pode ser executado de novo. Ele não migra banco, firewall nem DNS.
+
 ### Comandos úteis
 
 ```bash

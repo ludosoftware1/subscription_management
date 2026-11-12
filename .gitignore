@@ -97,3 +97,6 @@ coverage.xml
 *.temp
 *.bak
 ~$*
+
+# ---- Deploy: pacote com certificados/chaves privadas do servidor de origem ----
+deploy/*.tar.gz
