@@ -13,6 +13,7 @@ from django.db.models import Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.views.generic.edit import FormView
 
@@ -347,7 +348,7 @@ class TenantPaymentCreateView(LoginRequiredMixin, FormView):
 
 
 class TenantPaymentEditView(LoginRequiredMixin, FormView):
-    template_name = "tenants/payment_edit.html"
+    template_name = "tenants/payment_form.html"
     form_class = TenantPaymentForm
     success_url = reverse_lazy("tenants:payments-list")
 
@@ -377,4 +378,11 @@ class TenantPaymentDeleteView(LoginRequiredMixin, View):
         payment = get_object_or_404(TenantPayment, pk=pk)
         payment.delete()
         messages.success(request, "Pagamento excluído com sucesso.")
+        # Volta para a tela de onde a exclusão foi pedida (lista filtrada ou
+        # detalhe do cliente), desde que seja um caminho deste próprio site.
+        next_url = request.POST.get("next") or ""
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+        ):
+            return redirect(next_url)
         return redirect("tenants:payments-list")

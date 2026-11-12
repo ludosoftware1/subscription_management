@@ -1,0 +1,5 @@
+{% comment %}Selo de status de um pagamento. Uso: {% include "tenants/_payment_status.html" with payment=payment %}{% endcomment %}
+{% if payment.status == "paid" %}<span class="badge badge-status bg-success-subtle text-success">{{ payment.get_status_display }}</span>
+{% elif payment.status == "pending" %}<span class="badge badge-status bg-warning-subtle text-warning">{{ payment.get_status_display }}</span>
+{% elif payment.status == "failed" %}<span class="badge badge-status bg-danger-subtle text-danger">{{ payment.get_status_display }}</span>
+{% else %}<span class="badge badge-status bg-secondary-subtle text-secondary">{{ payment.get_status_display }}</span>{% endif %}

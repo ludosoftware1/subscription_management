@@ -1,241 +1,178 @@
 {% extends "partials/base.html" %}
 {% load static %}
-{% block title %}{% if is_update %}Editar cliente{% else %}Novo cliente{% endif %} | Clientes SaaS{% endblock title %}
+{% block title %}{% if is_update %}Editar {{ tenant.client_name }}{% else %}Novo cliente{% endif %}{% endblock title %}
 
 {% block content %}
 <div class="main-content">
     <div class="page-content">
         <div class="container-fluid">
-            <div class="row mb-3 pb-1">
-                <div class="col-12">
-                    <div class="d-flex align-items-lg-center flex-lg-row flex-column">
-                        <div class="flex-grow-1">
-                            <h4 class="fs-16 mb-1">
-                                {% if is_update %}Editar cliente{% else %}Novo cliente{% endif %}
-                            </h4>
-                            <p class="text-muted mb-0">
-                                Defina os dados do cliente e o status da assinatura no SaaS.
-                            </p>
-                        </div>
-                        <div class="mt-3 mt-lg-0">
-                            <a href="{% url 'tenants:list' %}" class="btn btn-outline-secondary">
-                                <i class="ri-arrow-left-line align-middle me-1"></i> Voltar
-                            </a>
-                        </div>
-                    </div>
+            <div class="page-header">
+                <div>
+                    <nav aria-label="Trilha de navegação">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'tenants:list' %}">Clientes</a></li>
+                            {% if is_update %}
+                            <li class="breadcrumb-item"><a href="{% url 'tenants:detail' tenant.schema_name %}">{{ tenant.client_name }}</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Editar</li>
+                            {% else %}
+                            <li class="breadcrumb-item active" aria-current="page">Novo cliente</li>
+                            {% endif %}
+                        </ol>
+                    </nav>
+                    <h1 class="page-header-title">{% if is_update %}Editar cliente{% else %}Novo cliente{% endif %}</h1>
+                    <p class="page-header-subtitle">
+                        {% if is_update %}As alterações valem imediatamente no SynDoc.{% else %}Cria o ambiente do cliente no SynDoc, com o primeiro usuário administrador.{% endif %}
+                    </p>
                 </div>
             </div>
 
-            {% if messages %}
-            <div class="row">
-                <div class="col-12">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
+            {% include "partials/messages.html" %}
 
             <div class="row">
-                <div class="col-12">
+                <div class="col-xxl-9">
                     <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Dados do cliente</h5>
-                        </div>
                         <div class="card-body">
-                            <form method="post" novalidate>
+                            {% if form.errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <i class="ri-error-warning-line align-middle me-1" aria-hidden="true"></i>
+                                Revise os campos destacados abaixo.
+                                {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <form method="post" novalidate id="tenant-form">
                                 {% csrf_token %}
 
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="{{ form.schema_name.id_for_label }}" class="form-label">
-                                                Identificador do cliente
-                                            </label>
-                                            {{ form.schema_name }}
-                                            {% if form.schema_name.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.schema_name.errors.0 }}
-                                            </div>
-                                            {% elif not is_update %}
-                                            <div class="form-text">{{ form.schema_name.help_text }}</div>
+                                <section class="form-section">
+                                    <h2 class="form-section-title">Identificação</h2>
+                                    <p class="form-section-hint">Como o cliente aparece no painel e o endereço que ele usa para acessar o SynDoc.</p>
+                                    <div class="row g-3">
+                                        <div class="col-md-7">
+                                            {% include "partials/form_field.html" with field=form.client_name label="Nome do cliente" %}
+                                        </div>
+                                        <div class="col-md-5">
+                                            {% if is_update %}
+                                            {% include "partials/form_field.html" with field=form.schema_name label="Identificador" help="Definido na criação; não pode ser alterado." %}
+                                            {% else %}
+                                            {% include "partials/form_field.html" with field=form.schema_name label="Identificador" help="Letras minúsculas, números e _ (ex.: prefeitura_xyz). Não pode ser alterado depois." %}
                                             {% endif %}
                                         </div>
-                                    </div>
-                                    <div class="col-md-8">
-                                        <div class="mb-3">
-                                            <label for="{{ form.client_name.id_for_label }}" class="form-label">
-                                                Nome do Cliente
-                                            </label>
-                                            {{ form.client_name }}
-                                            {% if form.client_name.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.client_name.errors.0 }}
-                                            </div>
-                                            {% endif %}
+                                        <div class="col-12">
+                                            {% include "partials/form_field.html" with field=form.primary_domain prefix="https://" help="Endereço pelo qual o cliente acessa o SynDoc." %}
                                         </div>
                                     </div>
-                                </div>
+                                </section>
 
                                 {% if not is_update %}
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="{{ form.email.id_for_label }}" class="form-label">
-                                                E-mail do super usuário
-                                            </label>
-                                            {{ form.email }}
-                                            {% if form.email.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.email.errors.0 }}
-                                            </div>
-                                            {% endif %}
+                                <section class="form-section">
+                                    <h2 class="form-section-title">Usuário administrador</h2>
+                                    <p class="form-section-hint">Primeiro acesso do cliente. A senha é exibida uma única vez após a criação: anote ou copie para enviar ao cliente.</p>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            {% include "partials/form_field.html" with field=form.email label="E-mail" %}
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
+                                        <div class="col-md-6">
                                             <label for="{{ form.password.id_for_label }}" class="form-label">
-                                                Senha do super usuário
+                                                Senha <span class="required-mark" title="Obrigatório" aria-hidden="true">*</span>
                                             </label>
                                             <div class="input-group">
                                                 {{ form.password }}
                                                 <button class="btn btn-outline-secondary" type="button" id="generate-password-btn">
-                                                    Gerar senha
+                                                    <i class="ri-refresh-line align-middle me-1" aria-hidden="true"></i>Gerar
+                                                </button>
+                                                <button class="btn btn-outline-secondary" type="button" id="copy-password-btn" aria-label="Copiar senha" data-bs-toggle="tooltip" title="Copiar senha">
+                                                    <i class="ri-file-copy-line align-middle" aria-hidden="true"></i>
                                                 </button>
                                             </div>
                                             {% if form.password.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.password.errors.0 }}
-                                            </div>
+                                            <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
+                                            {% else %}
+                                            <div class="form-text">Mínimo de 8 caracteres.</div>
                                             {% endif %}
                                         </div>
                                     </div>
-                                </div>
+                                </section>
                                 {% endif %}
 
-                                <div class="mb-3">
-                                    <label for="{{ form.primary_domain.id_for_label }}" class="form-label">
-                                        Domínio principal
-                                    </label>
-                                    {{ form.primary_domain }}
-                                    {% if form.primary_domain.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.primary_domain.errors.0 }}
-                                    </div>
-                                    {% else %}
-                                    <div class="form-text">{{ form.primary_domain.help_text }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="{{ form.paid_until.id_for_label }}" class="form-label">
-                                                Pago até
-                                            </label>
-                                            {{ form.paid_until }}
-                                            {% if form.paid_until.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.paid_until.errors.0 }}
-                                            </div>
-                                            {% else %}
-                                            <div class="form-text">{{ form.paid_until.help_text }}</div>
-                                            {% endif %}
+                                <section class="form-section">
+                                    <h2 class="form-section-title">Assinatura</h2>
+                                    <p class="form-section-hint">Define até quando o cliente tem acesso e quanto paga por mês.</p>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            {% include "partials/form_field.html" with field=form.paid_until help="Em branco = sem vencimento. Data passada bloqueia o acesso." %}
                                         </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="{{ form.monthly_price.id_for_label }}" class="form-label">
-                                                Valor mensal
-                                            </label>
-                                            {{ form.monthly_price }}
-                                            {% if form.monthly_price.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.monthly_price.errors.0 }}
-                                            </div>
-                                            {% endif %}
+                                        <div class="col-md-4">
+                                            {% include "partials/form_field.html" with field=form.monthly_price prefix="R$" %}
                                         </div>
-                                    </div>
-                                    <div class="col-md-4 d-flex align-items-center">
-                                        <div class="form-check form-switch mt-4">
-                                            {{ form.on_trial }}
-                                            <label class="form-check-label" for="{{ form.on_trial.id_for_label }}">
-                                                Em período de teste
-                                            </label>
+                                        <div class="col-md-4">
+                                            <span class="form-label d-block">Período de teste</span>
+                                            <div class="form-check form-switch form-switch-md mt-2">
+                                                {{ form.on_trial }}
+                                                <label class="form-check-label" for="{{ form.on_trial.id_for_label }}">Cliente em avaliação</label>
+                                            </div>
                                             {% if form.on_trial.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.on_trial.errors.0 }}
-                                            </div>
+                                            <div class="invalid-feedback d-block">{{ form.on_trial.errors.0 }}</div>
                                             {% endif %}
                                         </div>
                                     </div>
-                                </div>
+                                </section>
 
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="{{ form.manager_licenses.id_for_label }}" class="form-label">
-                                                Licenças Manager
-                                            </label>
-                                            <div class="input-group">
-                                                <button class="btn btn-outline-secondary decrement-btn" type="button" data-target-id="{{ form.manager_licenses.id_for_label }}">-</button>
+                                <section class="form-section">
+                                    <h2 class="form-section-title">Limites do plano</h2>
+                                    <p class="form-section-hint">Quantidade de usuários por perfil e espaço para documentos.</p>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label for="{{ form.manager_licenses.id_for_label }}" class="form-label">Licenças Manager</label>
+                                            <div class="input-group stepper">
+                                                <button class="btn btn-outline-secondary stepper-btn" type="button" data-target-id="{{ form.manager_licenses.id_for_label }}" data-step="-1" aria-label="Diminuir licenças Manager">−</button>
                                                 {{ form.manager_licenses }}
-                                                <button class="btn btn-outline-secondary increment-btn" type="button" data-target-id="{{ form.manager_licenses.id_for_label }}">+</button>
+                                                <button class="btn btn-outline-secondary stepper-btn" type="button" data-target-id="{{ form.manager_licenses.id_for_label }}" data-step="1" aria-label="Aumentar licenças Manager">+</button>
                                             </div>
                                             {% if form.manager_licenses.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.manager_licenses.errors.0 }}
-                                            </div>
+                                            <div class="invalid-feedback d-block">{{ form.manager_licenses.errors.0 }}</div>
                                             {% endif %}
                                         </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="{{ form.staff_licenses.id_for_label }}" class="form-label">
-                                                Licenças Staff
-                                            </label>
-                                            <div class="input-group">
-                                                <button class="btn btn-outline-secondary decrement-btn" type="button" data-target-id="{{ form.staff_licenses.id_for_label }}">-</button>
+                                        <div class="col-md-4">
+                                            <label for="{{ form.staff_licenses.id_for_label }}" class="form-label">Licenças Staff</label>
+                                            <div class="input-group stepper">
+                                                <button class="btn btn-outline-secondary stepper-btn" type="button" data-target-id="{{ form.staff_licenses.id_for_label }}" data-step="-1" aria-label="Diminuir licenças Staff">−</button>
                                                 {{ form.staff_licenses }}
-                                                <button class="btn btn-outline-secondary increment-btn" type="button" data-target-id="{{ form.staff_licenses.id_for_label }}">+</button>
+                                                <button class="btn btn-outline-secondary stepper-btn" type="button" data-target-id="{{ form.staff_licenses.id_for_label }}" data-step="1" aria-label="Aumentar licenças Staff">+</button>
                                             </div>
                                             {% if form.staff_licenses.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.staff_licenses.errors.0 }}
-                                            </div>
+                                            <div class="invalid-feedback d-block">{{ form.staff_licenses.errors.0 }}</div>
                                             {% endif %}
                                         </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="{{ form.storage_gb.id_for_label }}" class="form-label">
-                                                Storage (GB)
-                                            </label>
-                                            <div class="input-group">
-                                                <button class="btn btn-outline-secondary decrement-btn" type="button" data-target-id="{{ form.storage_gb.id_for_label }}" data-step="100">-</button>
+                                        <div class="col-md-4">
+                                            <label for="{{ form.storage_gb.id_for_label }}" class="form-label">Armazenamento</label>
+                                            <div class="input-group stepper">
+                                                <button class="btn btn-outline-secondary stepper-btn" type="button" data-target-id="{{ form.storage_gb.id_for_label }}" data-step="-100" aria-label="Diminuir armazenamento em 100 GB">−</button>
                                                 {{ form.storage_gb }}
-                                                <button class="btn btn-outline-secondary increment-btn" type="button" data-target-id="{{ form.storage_gb.id_for_label }}" data-step="100">+</button>
+                                                <span class="input-group-text">GB</span>
+                                                <button class="btn btn-outline-secondary stepper-btn" type="button" data-target-id="{{ form.storage_gb.id_for_label }}" data-step="100" aria-label="Aumentar armazenamento em 100 GB">+</button>
                                             </div>
                                             {% if form.storage_gb.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.storage_gb.errors.0 }}
-                                            </div>
+                                            <div class="invalid-feedback d-block">{{ form.storage_gb.errors.0 }}</div>
+                                            {% else %}
+                                            <div class="form-text">0 = sem cota definida.</div>
                                             {% endif %}
                                         </div>
                                     </div>
-                                </div>
+                                </section>
 
-                                <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="ri-save-line align-middle me-1"></i>
-                                        {% if is_update %}Salvar alterações{% else %}Criar tenant{% endif %}
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary" id="tenant-submit"
+                                       >
+                                        <i class="ri-save-line align-middle me-1" aria-hidden="true"></i>
+                                        {% if is_update %}Salvar alterações{% else %}Criar cliente{% endif %}
                                     </button>
-                                    <a href="{% url 'tenants:list' %}" class="btn btn-outline-secondary">
-                                        Cancelar
-                                    </a>
+                                    <a href="{% if is_update %}{% url 'tenants:detail' tenant.schema_name %}{% else %}{% url 'tenants:list' %}{% endif %}" class="btn btn-ghost-secondary">Cancelar</a>
+                                    {% if not is_update %}
+                                    <span class="text-muted fs-13 ms-md-2" id="tenant-submit-hint" hidden aria-live="polite">
+                                        Preparando o ambiente do cliente. Pode levar alguns minutos; não feche esta página.
+                                    </span>
+                                    {% endif %}
                                 </div>
                             </form>
                         </div>
@@ -251,84 +188,81 @@
 {% block extra_js %}
 <script>
     (function () {
-        var form = document.querySelector("form");
+        var form = document.getElementById("tenant-form");
         if (!form) {
             return;
         }
 
+        // Valor mensal sempre com duas casas.
         var monthlyInput = document.getElementById("{{ form.monthly_price.id_for_label }}");
         if (monthlyInput) {
             monthlyInput.addEventListener("blur", function () {
-                var value = monthlyInput.value.replace(",", ".");
-                if (value === "") {
-                    return;
-                }
-                var number = parseFloat(value);
+                var number = parseFloat(monthlyInput.value.replace(",", "."));
                 if (!isNaN(number)) {
                     monthlyInput.value = number.toFixed(2);
                 }
             });
         }
 
+        // Senha aleatória gerada no navegador (fonte criptográfica).
         var passwordInput = document.getElementById("{{ form.password.id_for_label }}");
-
         function generatePassword() {
-            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            var length = 12;
+            var chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+            var values = new Uint32Array(14);
+            window.crypto.getRandomValues(values);
             var result = "";
-            for (var i = 0; i < length; i++) {
-                var index = Math.floor(Math.random() * chars.length);
-                result += chars.charAt(index);
+            for (var i = 0; i < values.length; i++) {
+                result += chars.charAt(values[i] % chars.length);
             }
             return result;
         }
-
-        var generatePasswordButton = document.getElementById("generate-password-btn");
-        if (generatePasswordButton && passwordInput) {
-            generatePasswordButton.addEventListener("click", function () {
+        var generateButton = document.getElementById("generate-password-btn");
+        if (generateButton && passwordInput) {
+            generateButton.addEventListener("click", function () {
                 passwordInput.value = generatePassword();
+                passwordInput.classList.remove("is-invalid");
+            });
+        }
+        var copyButton = document.getElementById("copy-password-btn");
+        if (copyButton && passwordInput) {
+            copyButton.addEventListener("click", function () {
+                if (!passwordInput.value) {
+                    return;
+                }
+                var done = function () {
+                    if (window.showSystemToast) {
+                        window.showSystemToast("Senha copiada.", "success");
+                    }
+                };
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(passwordInput.value).then(done);
+                } else {
+                    passwordInput.select();
+                    document.execCommand("copy");
+                    done();
+                }
             });
         }
 
-        var decrementButtons = document.querySelectorAll(".decrement-btn");
-        var incrementButtons = document.querySelectorAll(".increment-btn");
-
-        function updateNumberInput(targetId, delta) {
-            var input = document.getElementById(targetId);
-            if (!input) {
-                return;
-            }
-            var value = parseInt(input.value || "0", 10);
-            if (isNaN(value)) {
-                value = 0;
-            }
-            value = value + delta;
-            if (value < 0) {
-                value = 0;
-            }
-            input.value = value;
-        }
-
-        decrementButtons.forEach(function (btn) {
+        // Botões − / + dos campos numéricos.
+        document.querySelectorAll(".stepper-btn").forEach(function (btn) {
             btn.addEventListener("click", function () {
-                var targetId = btn.getAttribute("data-target-id");
-                var step = parseInt(btn.getAttribute("data-step") || "1", 10);
-                if (isNaN(step) || step <= 0) {
-                    step = 1;
+                var input = document.getElementById(btn.getAttribute("data-target-id"));
+                if (!input) {
+                    return;
                 }
-                updateNumberInput(targetId, -step);
+                var value = parseInt(input.value || "0", 10);
+                var step = parseInt(btn.getAttribute("data-step") || "1", 10);
+                input.value = Math.max(0, (isNaN(value) ? 0 : value) + step);
             });
         });
 
-        incrementButtons.forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                var targetId = btn.getAttribute("data-target-id");
-                var step = parseInt(btn.getAttribute("data-step") || "1", 10);
-                if (isNaN(step) || step <= 0) {
-                    step = 1;
-                }
-                updateNumberInput(targetId, step);
-            });
+        // A criação roda as migrations do novo ambiente: avisa que demora.
+        form.addEventListener("submit", function () {
+            var hint = document.getElementById("tenant-submit-hint");
+            if (hint) {
+                hint.hidden = false;
+            }
         });
     })();
 </script>

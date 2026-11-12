@@ -1,158 +1,136 @@
 {% extends "partials/base.html" %}
 {% load static %}
-{% block title %}Clientes do SynDoc{% endblock title %}
+{% block title %}Clientes{% endblock title %}
 
 {% block content %}
 <div class="main-content">
     <div class="page-content">
         <div class="container-fluid">
-            <div class="row mb-3 pb-1">
-                <div class="col-12">
-                    <div class="d-flex align-items-lg-center flex-lg-row flex-column">
-                        <div class="flex-grow-1">
-                            <h4 class="fs-16 mb-1">Clientes do SynDoc</h4>
-                            <p class="text-muted mb-0">Tenants cadastrados no SynDoc: situação da assinatura, licenças, armazenamento e pagamentos.</p>
-                        </div>
-                        <div class="mt-3 mt-lg-0 d-flex gap-2">
-                            <a href="{% url 'tenants:payments-list' %}" class="btn btn-soft-secondary">
-                                <i class="ri-bank-card-line align-middle me-1"></i> Pagamentos
-                            </a>
-                            <a href="{% url 'tenants:create' %}" class="btn btn-success">
-                                <i class="ri-add-circle-line align-middle me-1"></i> Novo cliente
-                            </a>
-                        </div>
-                    </div>
+            <div class="page-header">
+                <div>
+                    <nav aria-label="Trilha de navegação">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Clientes</li>
+                        </ol>
+                    </nav>
+                    <h1 class="page-header-title">Clientes</h1>
+                    <p class="page-header-subtitle">Assinatura, licenças e armazenamento de cada cliente do SynDoc.</p>
+                </div>
+                <div class="page-header-actions">
+                    <a href="{% url 'tenants:create' %}" class="btn btn-success">
+                        <i class="ri-add-line align-middle me-1" aria-hidden="true"></i> Novo cliente
+                    </a>
                 </div>
             </div>
 
-            {% if messages %}
-            <div class="row">
-                <div class="col-12">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
+            {% include "partials/messages.html" %}
 
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <form method="get" class="row g-2 align-items-center">
-                                <div class="col-md-5">
-                                    <div class="search-box">
-                                        <input type="text" name="q" value="{{ filter_q }}" class="form-control search" placeholder="Buscar por identificador, nome ou domínio">
-                                        <i class="ri-search-line search-icon"></i>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <select name="status" class="form-select">
-                                        <option value="">Todas as situações</option>
-                                        {% for value, label in status_choices %}
-                                        <option value="{{ value }}" {% if filter_status == value %}selected{% endif %}>{{ label }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-md-4 d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="ri-filter-2-line align-middle me-1"></i> Filtrar
-                                    </button>
-                                    {% if filter_q or filter_status %}
-                                    <a href="{% url 'tenants:list' %}" class="btn btn-soft-secondary">Limpar</a>
-                                    {% endif %}
-                                    <span class="ms-auto text-muted align-self-center fs-12">{{ tenants|length }} de {{ total_count }} cliente(s)</span>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="card-body">
-                            {% if tenants %}
-                            <div class="table-responsive table-card">
-                                <table class="table table-hover table-centered align-middle table-nowrap mb-0">
-                                    <thead class="text-muted table-light">
-                                        <tr>
-                                            <th>Identificador</th>
-                                            <th>Cliente</th>
-                                            <th>Domínio principal</th>
-                                            <th>Situação</th>
-                                            <th>Pago até</th>
-                                            <th>Valor mensal</th>
-                                            <th>Licenças (M / S)</th>
-                                            <th>Armazenamento</th>
-                                            <th>Criado em</th>
-                                            <th>Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for tenant in tenants %}
-                                        <tr>
-                                            <td class="fw-medium">{{ tenant.schema_name }}</td>
-                                            <td>{{ tenant.client_name }}</td>
-                                            <td>
-                                                {% if tenant.primary_domain %}
-                                                <a href="https://{{ tenant.primary_domain }}" target="_blank" rel="noopener" class="link-secondary">{{ tenant.primary_domain }}</a>
-                                                {% else %}-{% endif %}
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-{{ tenant.status_color }}-subtle text-{{ tenant.status_color }}">{{ tenant.status_label }}</span>
-                                            </td>
-                                            <td>
-                                                {% if tenant.paid_until %}
-                                                    {{ tenant.paid_until|date:"d/m/Y" }}
-                                                    {% if tenant.days_left is not None and tenant.days_left >= 0 and tenant.days_left <= 30 %}
-                                                    <small class="text-muted d-block">em {{ tenant.days_left }} dia(s)</small>
-                                                    {% endif %}
-                                                {% else %}
-                                                    <span class="text-muted">sem vencimento</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>R$ {{ tenant.monthly_price|floatformat:2 }}</td>
-                                            <td>{{ tenant.manager_licenses|default:"0" }} / {{ tenant.staff_licenses|default:"0" }}</td>
-                                            <td>
-                                                {% if tenant.storage_gb %}
-                                                    {{ tenant.storage_used_gb|default:"0" }} / {{ tenant.storage_gb }} GB
-                                                    {% if tenant.storage_used_percent is not None %}
-                                                    <div class="progress progress-sm mt-1" style="min-width: 80px;">
-                                                        <div class="progress-bar {% if tenant.storage_used_percent >= 90 %}bg-danger{% elif tenant.storage_used_percent >= 75 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ tenant.storage_used_percent }}%" aria-valuenow="{{ tenant.storage_used_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
-                                                    </div>
-                                                    {% endif %}
-                                                {% else %}
-                                                    {{ tenant.storage_used_gb|default:"0" }} GB <small class="text-muted">(sem cota)</small>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {% if tenant.created_on %}{{ tenant.created_on|date:"d/m/Y" }}{% else %}-{% endif %}
-                                            </td>
-                                            <td>
-                                                <div class="d-flex gap-1">
-                                                    <a href="{% url 'tenants:detail' tenant.schema_name %}" class="btn btn-sm btn-soft-secondary" title="Detalhes">
-                                                        <i class="ri-eye-line align-middle"></i>
-                                                    </a>
-                                                    <a href="{% url 'tenants:update' tenant.schema_name %}" class="btn btn-sm btn-soft-primary" title="Editar">
-                                                        <i class="ri-edit-line align-middle"></i>
-                                                    </a>
-                                                    <a href="{% url 'tenants:payments-create' %}?schema_name={{ tenant.schema_name }}" class="btn btn-sm btn-soft-success" title="Registrar pagamento">
-                                                        <i class="ri-bank-card-line align-middle"></i>
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+            <div class="card">
+                <div class="card-header">
+                    <form method="get" class="row g-2 align-items-center" role="search">
+                        <div class="col-md-5 col-xl-4">
+                            <label for="filter-q" class="visually-hidden">Buscar cliente</label>
+                            <div class="search-box">
+                                <input type="search" id="filter-q" name="q" value="{{ filter_q }}" class="form-control search" placeholder="Buscar por nome, identificador ou domínio">
+                                <i class="ri-search-line search-icon" aria-hidden="true"></i>
                             </div>
-                            {% elif error_message %}
-                            <p class="text-muted mb-0">Não foi possível carregar os clientes do SynDoc. Corrija a configuração da API e recarregue a página.</p>
-                            {% elif filter_q or filter_status %}
-                            <p class="text-muted mb-0">Nenhum cliente corresponde ao filtro.</p>
-                            {% else %}
-                            <p class="text-muted mb-0">Nenhum cliente cadastrado no SynDoc ainda. Use “Novo cliente” para criar o primeiro.</p>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filter-status" class="visually-hidden">Situação</label>
+                            <select id="filter-status" name="status" class="form-select" onchange="this.form.submit()">
+                                <option value="">Todas as situações</option>
+                                {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if filter_status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-auto d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Buscar</button>
+                            {% if filter_q or filter_status %}
+                            <a href="{% url 'tenants:list' %}" class="btn btn-ghost-secondary">Limpar filtros</a>
                             {% endif %}
                         </div>
+                        <div class="col-md text-md-end text-muted fs-13" aria-live="polite">
+                            {% if filter_q or filter_status %}{{ tenants|length }} de {{ total_count }} cliente{{ total_count|pluralize }}{% else %}{{ total_count }} cliente{{ total_count|pluralize }}{% endif %}
+                        </div>
+                    </form>
+                </div>
+                <div class="card-body">
+                    {% if tenants %}
+                    <div class="table-responsive table-card">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="text-muted table-light">
+                                <tr>
+                                    <th scope="col">Cliente</th>
+                                    <th scope="col">Situação</th>
+                                    <th scope="col">Pago até</th>
+                                    <th scope="col" class="num">Valor mensal</th>
+                                    <th scope="col" class="num">Licenças <abbr title="Manager / Staff" class="fw-normal">(M / S)</abbr></th>
+                                    <th scope="col">Armazenamento</th>
+                                    <th scope="col" class="col-actions">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tenant in tenants %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'tenants:detail' tenant.schema_name %}" class="fw-medium link-body-emphasis">{{ tenant.client_name }}</a>
+                                        <small class="text-muted d-block">
+                                            {{ tenant.schema_name }}
+                                            {% if tenant.primary_domain %}
+                                            · <a href="https://{{ tenant.primary_domain }}" target="_blank" rel="noopener" class="link-secondary">{{ tenant.primary_domain }}<i class="ri-external-link-line ms-1 align-bottom" aria-hidden="true"></i><span class="visually-hidden"> (abre em nova aba)</span></a>
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-status bg-{{ tenant.status_color }}-subtle text-{{ tenant.status_color }}">{{ tenant.status_label }}</span>
+                                    </td>
+                                    <td class="text-nowrap">{% include "tenants/_paid_until.html" with tenant=tenant %}</td>
+                                    <td class="num">R$ {{ tenant.monthly_price|floatformat:"2g" }}</td>
+                                    <td class="num">{{ tenant.manager_licenses|default:"0" }} / {{ tenant.staff_licenses|default:"0" }}</td>
+                                    <td>{% include "tenants/_storage.html" with tenant=tenant %}</td>
+                                    <td class="col-actions">
+                                        <div class="d-inline-flex gap-1">
+                                            <a href="{% url 'tenants:payments-create' %}?schema_name={{ tenant.schema_name }}" class="btn btn-sm btn-soft-success btn-icon" data-bs-toggle="tooltip" title="Registrar pagamento" aria-label="Registrar pagamento de {{ tenant.client_name }}">
+                                                <i class="ri-bank-card-line" aria-hidden="true"></i>
+                                            </a>
+                                            <a href="{% url 'tenants:update' tenant.schema_name %}" class="btn btn-sm btn-soft-primary btn-icon" data-bs-toggle="tooltip" title="Editar" aria-label="Editar {{ tenant.client_name }}">
+                                                <i class="ri-edit-line" aria-hidden="true"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
+                    {% elif error_message %}
+                    <div class="empty-state">
+                        <i class="ri-wifi-off-line" aria-hidden="true"></i>
+                        <p class="empty-state-title">Não foi possível carregar os clientes</p>
+                        <p>O SynDoc não respondeu. Confira a configuração da API e tente novamente.</p>
+                        <a href="{{ request.get_full_path }}" class="btn btn-soft-primary btn-sm">
+                            <i class="ri-refresh-line align-middle me-1" aria-hidden="true"></i> Tentar novamente
+                        </a>
+                    </div>
+                    {% elif filter_q or filter_status %}
+                    <div class="empty-state">
+                        <i class="ri-search-line" aria-hidden="true"></i>
+                        <p class="empty-state-title">Nenhum cliente encontrado</p>
+                        <p>Nenhum cliente corresponde aos filtros aplicados.</p>
+                        <a href="{% url 'tenants:list' %}" class="btn btn-soft-secondary btn-sm">Limpar filtros</a>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="ri-building-line" aria-hidden="true"></i>
+                        <p class="empty-state-title">Nenhum cliente cadastrado</p>
+                        <p>Crie o primeiro cliente para liberar o acesso dele ao SynDoc.</p>
+                        <a href="{% url 'tenants:create' %}" class="btn btn-success btn-sm">
+                            <i class="ri-add-line align-middle me-1" aria-hidden="true"></i> Novo cliente
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

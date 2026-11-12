@@ -3,11 +3,11 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-6">
-                {{ configuracao_site.footer_text1|default:"2025 © Velzon." }}
+                {% if configuracao_site.footer_text1 %}{{ configuracao_site.footer_text1 }}{% else %}© {% now "Y" %} SynDoc{% endif %}
             </div>
             <div class="col-sm-6">
                 <div class="text-sm-end d-none d-sm-block">
-                    {{ configuracao_site.footer_text2|default:"Design & Develop by Themesbrand" }}
+                    {{ configuracao_site.footer_text2|default:"Painel de assinaturas" }}
                 </div>
             </div>
         </div>

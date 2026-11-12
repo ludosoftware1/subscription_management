@@ -23,7 +23,22 @@ def normalize_domain(value: str) -> str:
     return value
 
 
-class TenantForm(forms.Form):
+class InvalidFieldClassMixin:
+    """Marca com ``is-invalid`` (Bootstrap) os campos que falharam na validação,
+    para o erro aparecer no próprio campo e não só no texto abaixo dele."""
+
+    def full_clean(self):
+        super().full_clean()
+        for name in self.errors:
+            field = self.fields.get(name)
+            if field is None:
+                continue
+            classes = field.widget.attrs.get("class", "")
+            if "is-invalid" not in classes:
+                field.widget.attrs["class"] = f"{classes} is-invalid".strip()
+
+
+class TenantForm(InvalidFieldClassMixin, forms.Form):
     schema_name = forms.CharField(
         label="Identificador do cliente",
         max_length=63,
@@ -31,9 +46,9 @@ class TenantForm(forms.Form):
         widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "ex.: prefeitura_xyz"}),
     )
     client_name = forms.CharField(
-        label="Nome do Cliente",
+        label="Nome do cliente",
         max_length=100,
-        widget=forms.TextInput(attrs={"class": "form-control"}),
+        widget=forms.TextInput(attrs={"class": "form-control", "autocomplete": "off"}),
     )
     email = forms.EmailField(
         label="E-mail do super usuário",
@@ -64,7 +79,7 @@ class TenantForm(forms.Form):
         widget=forms.NumberInput(attrs={"class": "form-control"}),
     )
     storage_gb = forms.IntegerField(
-        label="Storage (GB)",
+        label="Armazenamento (GB)",
         required=False,
         min_value=0,
         widget=forms.NumberInput(attrs={"class": "form-control"}),
@@ -92,7 +107,10 @@ class TenantForm(forms.Form):
         label="Pago até",
         required=False,
         help_text="Vazio = acesso sem vencimento. Data passada bloqueia o acesso do cliente no SynDoc.",
+        # type="date" só aceita o valor em ISO (AAAA-MM-DD); sem ``format`` o
+        # Django usa o formato local (DD/MM/AAAA) e o campo abre vazio na edição.
         widget=forms.DateInput(
+            format="%Y-%m-%d",
             attrs={"class": "form-control", "type": "date"},
         ),
     )
@@ -136,7 +154,7 @@ class TenantForm(forms.Form):
         return cleaned
 
 
-class TenantPaymentForm(forms.ModelForm):
+class TenantPaymentForm(InvalidFieldClassMixin, forms.ModelForm):
     schema_name = forms.ChoiceField(
         label="Cliente",
         required=True,
@@ -173,6 +191,7 @@ class TenantPaymentForm(forms.ModelForm):
                 },
             ),
             "payment_date": forms.DateInput(
+                format="%Y-%m-%d",  # ISO, exigido por type="date" (ver TenantForm.paid_until)
                 attrs={
                     "class": "form-control",
                     "type": "date",

@@ -1,14 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" {% block html %}data-layout="vertical" data-topbar="light" data-bs-theme="light" data-sidebar="dark"
+<html lang="pt-BR" {% block html %}data-layout="vertical" data-topbar="light" data-bs-theme="light" data-sidebar="dark"
     data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable" {% endblock html %}>
 
 <head>
     <meta charset="utf-8" />
-    <title>{% block title %}{% endblock title %} | Velzon - Admin & Dashboard Template</title>
+    <title>{% block title %}{% endblock title %} | Painel de assinaturas SynDoc</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
-    <meta content="Themesbrand" name="author" />
+    <meta content="Painel de assinaturas dos clientes do SynDoc" name="description" />
+    <meta name="robots" content="noindex, nofollow" />
     <!-- App favicon -->
     {% if configuracao_site.favicon %}
     <link rel="shortcut icon" href="{{ configuracao_site.favicon.url }}">
@@ -42,6 +42,7 @@
 </head>
 
 <body>
+    <a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
     <!-- Begin page -->
     <div id="layout-wrapper">
         {% block header %}
@@ -60,31 +61,35 @@
     </div>
 
     {% block extra_content %}
-    <!-- Modal de Confirmação de Exclusão -->
-    <div id="deleteConfirmationModal" class="modal fade zoomIn" tabindex="-1" aria-hidden="true">
+    <!-- Modal de Confirmação de Exclusão.
+         Uso: <a href="URL-DE-EXCLUSAO" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal"
+                 data-delete-message="Texto opcional" data-delete-next="URL opcional de retorno">
+         O formulário do modal faz POST (com CSRF) para o href do link. -->
+    <div id="deleteConfirmationModal" class="modal fade zoomIn" tabindex="-1" aria-hidden="true"
+        aria-labelledby="delete-modal-title">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"
                         id="delete-close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="mt-2 text-center">
-                        <lord-icon src="https://cdn.lordicon.com/gsqxdxog.json" trigger="loop"
-                            colors="primary:#f7b84b,secondary:#f06548" style="width:100px;height:100px"></lord-icon>
-                        <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
-                            <h4>Você tem certeza?</h4>
-                            <p class="text-muted mx-4 mb-0">Você tem certeza que deseja remover este registro? Esta ação
-                                não pode ser desfeita.</p>
+                <div class="modal-body pt-0">
+                    <div class="text-center">
+                        <span class="confirm-icon bg-danger-subtle text-danger" aria-hidden="true">
+                            <i class="ri-delete-bin-line"></i>
+                        </span>
+                        <div class="mt-3 mx-sm-4">
+                            <h4 id="delete-modal-title">Excluir registro?</h4>
+                            <p class="text-muted mb-0" id="delete-modal-message"
+                                data-default="Esta ação não pode ser desfeita.">Esta ação não pode ser desfeita.</p>
                         </div>
                     </div>
-                    <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
+                    <form id="delete-form" method="post" class="d-flex gap-2 justify-content-center mt-4 mb-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" id="delete-next" value="">
                         <button type="button" class="btn w-sm btn-light" data-bs-dismiss="modal">Cancelar</button>
-                        <form id="delete-form" method="post" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn w-sm btn-danger" id="delete-record">Sim, Excluir!</button>
-                        </form>
-                    </div>
+                        <button type="submit" class="btn w-sm btn-danger" id="delete-record">Excluir</button>
+                    </form>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
@@ -96,7 +101,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="action-modal-title">Confirmar Ação</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body text-center py-4">
                     <h4 id="action-modal-question" class="mb-3">Você tem certeza?</h4>
@@ -238,6 +243,11 @@
                     // Encontra o formulário dentro do modal e define o seu 'action'
                     const deleteForm = document.getElementById('delete-form');
                     deleteForm.setAttribute('action', deleteUrl);
+
+                    // Texto e destino de retorno opcionais, definidos no próprio link
+                    const messageEl = document.getElementById('delete-modal-message');
+                    messageEl.textContent = triggerLink.getAttribute('data-delete-message') || messageEl.dataset.default;
+                    document.getElementById('delete-next').value = triggerLink.getAttribute('data-delete-next') || '';
                 });
             }
 
@@ -271,6 +281,13 @@
     <!-- Sidebar improvements -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Destino do link "Pular para o conteúdo"
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent && !mainContent.id) {
+            mainContent.id = 'conteudo-principal';
+            mainContent.setAttribute('tabindex', '-1');
+        }
+
         // Fechar sidebar em mobile após clicar em links
         const sidebarLinks = document.querySelectorAll('.navbar-nav .nav-link');
         const body = document.body;

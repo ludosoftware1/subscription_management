@@ -1,65 +1,65 @@
 {% extends 'account/base.html' %}
 {% load static %}
-{% load i18n %}
-{% load crispy_forms_tags %}
 
 {% block title %}Entrar{% endblock title %}
-    
+
 {% block content %}
-<div class="p-lg-5 p-4">
-    <div>
-        <h5 class="text-primary">Bem-vindo de volta!</h5>
-        <p class="text-muted">Faça login para continuar.</p>
-    </div>
+<div class="p-lg-4 p-2">
+    <h1 class="fs-20 text-primary mb-1">Entrar</h1>
+    <p class="text-muted">Acesse o painel de assinaturas do SynDoc.</p>
 
-    <div class="mt-4">
-        <form class="needs-validation" novalidate method="POST" action="{% url 'account_login' %}">
-            {% csrf_token %}
+    <form class="mt-4" novalidate method="POST" action="{% url 'account_login' %}">
+        {% csrf_token %}
+        {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+        {% endif %}
 
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger text-center">
-                    {% for error in form.non_field_errors %}
-                        {{ error }}
-                    {% endfor %}
-                </div>
-            {% endif %}
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">
+            <i class="ri-error-warning-line align-middle me-1" aria-hidden="true"></i>
+            {% for error in form.non_field_errors %}{{ error }} {% endfor %}
+        </div>
+        {% endif %}
 
-            {% for message in messages %}
-            <div class="alert {{ message.tags }} mb-4" role="alert">
-                <strong>{{ message }}</strong>
+        {% include "account/_messages.html" %}
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.login.id_for_label }}">E-mail ou usuário</label>
+            <input type="text" name="{{ form.login.html_name }}" id="{{ form.login.id_for_label }}"
+                class="form-control{% if form.login.errors %} is-invalid{% endif %}"
+                value="{{ form.login.value|default_if_none:'' }}" autocomplete="username" autofocus required>
+            {% if form.login.errors %}<div class="invalid-feedback d-block">{{ form.login.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="mb-3">
+            <div class="float-end">
+                <a href="{% url 'account_reset_password' %}" class="link-secondary fs-13">Esqueceu a senha?</a>
             </div>
-            {% endfor %}
+            <label class="form-label" for="password-input">Senha</label>
+            <div class="position-relative auth-pass-inputgroup">
+                <input type="password" name="password" class="form-control pe-5 password-input{% if form.password.errors %} is-invalid{% endif %}"
+                    id="password-input" autocomplete="current-password" required>
+                <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon"
+                    type="button" aria-label="Mostrar ou ocultar a senha"><i class="ri-eye-fill align-middle" aria-hidden="true"></i></button>
+            </div>
+            {% if form.password.errors %}<div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>{% endif %}
+        </div>
 
-            <div class="mb-3">
-                {{ form.login|as_crispy_field }}
-            </div>
+        {% if form.remember %}
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="{{ form.remember.html_name }}" id="{{ form.remember.id_for_label }}"{% if form.remember.value %} checked{% endif %}>
+            <label class="form-check-label" for="{{ form.remember.id_for_label }}">Manter conectado neste dispositivo</label>
+        </div>
+        {% endif %}
 
-            <div class="mb-3">
-                <div class="float-end">
-                    <a href="{% url 'account_reset_password' %}" class="text-muted">Esqueceu a senha?</a>
-                </div>
-                <label class="form-label" for="password-input">Senha</label>
-                <div class="position-relative auth-pass-inputgroup">
-                    <input type="password" name="password" class="form-control pe-5 password-input" id="password-input" required>
-                    {{ form.password.errors }}
-                    <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon" type="button"><i class="ri-eye-fill align-middle"></i></button>
-                </div>
-            </div>
-
-            <div class="form-check">
-                {{ form.remember|as_crispy_field }}
-            </div>
-            
-            <div class="mt-4">
-                <button class="btn btn-success w-100" type="submit">Entrar</button>
-            </div>
-        </form>
-    </div>
+        <div class="mt-4">
+            <button class="btn btn-success w-100" type="submit">Entrar</button>
+        </div>
+    </form>
 </div>
 {% endblock content %}
 
 {% block extra_js %}
-        <!-- password-addon init -->
-        <script src="{% static 'js/pages/password-addon.init.js'%}"></script>
+<!-- password-addon init -->
+<script src="{% static 'js/pages/password-addon.init.js'%}"></script>
 {% endblock extra_js %}
-    

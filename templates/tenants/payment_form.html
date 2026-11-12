@@ -1,153 +1,89 @@
 {% extends "partials/base.html" %}
 {% load static %}
-{% block title %}Novo pagamento{% endblock title %}
+{% comment %}Criação e edição de pagamento. Na edição a view envia "payment".{% endcomment %}
+{% block title %}{% if payment %}Editar pagamento{% else %}Registrar pagamento{% endif %}{% endblock title %}
 
 {% block content %}
 <div class="main-content">
     <div class="page-content">
         <div class="container-fluid">
-            <div class="row mb-3 pb-1">
-                <div class="col-12">
-                    <div class="d-flex align-items-lg-center flex-lg-row flex-column">
-                        <div class="flex-grow-1">
-                            <h4 class="fs-16 mb-1">Novo pagamento</h4>
-                            <p class="text-muted mb-0">
-                                Registre um novo pagamento para qualquer cliente e anexe a nota fiscal.
-                            </p>
-                        </div>
-                        <div class="mt-3 mt-lg-0">
-                            <a href="{% url 'tenants:payments-list' %}" class="btn btn-outline-secondary">
-                                <i class="ri-arrow-left-line align-middle me-1"></i> Voltar para pagamentos
-                            </a>
-                        </div>
-                    </div>
+            <div class="page-header">
+                <div>
+                    <nav aria-label="Trilha de navegação">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'tenants:payments-list' %}">Pagamentos</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{% if payment %}Editar{% else %}Registrar{% endif %}</li>
+                        </ol>
+                    </nav>
+                    <h1 class="page-header-title">{% if payment %}Editar pagamento{% else %}Registrar pagamento{% endif %}</h1>
+                    <p class="page-header-subtitle">
+                        {% if payment %}{{ payment.client_name|default:payment.schema_name }} · {{ payment.payment_date|date:"d/m/Y" }}{% else %}Registre um pagamento recebido e anexe a nota fiscal.{% endif %}
+                    </p>
                 </div>
+                {% if payment %}
+                <div class="page-header-actions">
+                    <a href="{% url 'tenants:payments-delete' payment.id %}" class="btn btn-soft-danger" role="button"
+                        data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal"
+                        data-delete-message="O pagamento de R$ {{ payment.amount|floatformat:'2g' }} de {{ payment.client_name|default:payment.schema_name }} será excluído. Esta ação não pode ser desfeita.">
+                        <i class="ri-delete-bin-line align-middle me-1" aria-hidden="true"></i> Excluir
+                    </a>
+                </div>
+                {% endif %}
             </div>
 
-            {% if messages %}
-            <div class="row">
-                <div class="col-12">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
+            {% include "partials/messages.html" %}
 
             <div class="row">
-                <div class="col-12">
+                <div class="col-xl-8">
                     <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Dados do pagamento</h5>
-                        </div>
                         <div class="card-body">
+                            {% if form.errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <i class="ri-error-warning-line align-middle me-1" aria-hidden="true"></i>
+                                Revise os campos destacados abaixo.
+                                {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+                            </div>
+                            {% endif %}
+
                             <form method="post" enctype="multipart/form-data" novalidate>
                                 {% csrf_token %}
-
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="{{ form.schema_name.id_for_label }}" class="form-label">
-                                                Cliente
-                                            </label>
-                                            {{ form.schema_name }}
-                                            {% if form.schema_name.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.schema_name.errors.0 }}
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="{{ form.amount.id_for_label }}" class="form-label">
-                                                Valor
-                                            </label>
-                                            {{ form.amount }}
-                                            {% if form.amount.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.amount.errors.0 }}
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="{{ form.payment_date.id_for_label }}" class="form-label">
-                                                Data do pagamento
-                                            </label>
-                                            {{ form.payment_date }}
-                                            {% if form.payment_date.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.payment_date.errors.0 }}
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="{{ form.status.id_for_label }}" class="form-label">
-                                                Status
-                                            </label>
-                                            {{ form.status }}
-                                            {% if form.status.errors %}
-                                            <div class="invalid-feedback d-block">
-                                                {{ form.status.errors.0 }}
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-
                                 {{ form.currency }}
 
-                                <div class="mb-3">
-                                    <label for="{{ form.reference.id_for_label }}" class="form-label">
-                                        Referência
-                                    </label>
-                                    {{ form.reference }}
-                                    {% if form.reference.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.reference.errors.0 }}
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        {% include "partials/form_field.html" with field=form.schema_name %}
                                     </div>
-                                    {% endif %}
+                                    <div class="col-md-4">
+                                        {% if payment %}
+                                        {% include "partials/form_field.html" with field=form.amount prefix="R$" %}
+                                        {% else %}
+                                        {% include "partials/form_field.html" with field=form.amount prefix="R$" help="Sugerido a partir do valor mensal do cliente." %}
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {% include "partials/form_field.html" with field=form.payment_date %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {% include "partials/form_field.html" with field=form.status %}
+                                    </div>
+                                    <div class="col-12">
+                                        {% include "partials/form_field.html" with field=form.reference help="Opcional. Ex.: número da nota fiscal ou do boleto." %}
+                                    </div>
+                                    <div class="col-12">
+                                        {% include "partials/form_field.html" with field=form.invoice_file label="Nota fiscal" help="Opcional. PDF ou imagem da nota fiscal." %}
+                                    </div>
+                                    <div class="col-12">
+                                        {% include "partials/form_field.html" with field=form.notes help="Opcional. Visível apenas neste painel." %}
+                                    </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="{{ form.notes.id_for_label }}" class="form-label">
-                                        Observações
-                                    </label>
-                                    {{ form.notes }}
-                                    {% if form.notes.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.notes.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="{{ form.invoice_file.id_for_label }}" class="form-label">
-                                        Nota fiscal (anexo)
-                                    </label>
-                                    {{ form.invoice_file }}
-                                    {% if form.invoice_file.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.invoice_file.errors.0 }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="d-flex justify-content-end">
+                                <div class="form-actions mt-4">
                                     <button type="submit" class="btn btn-primary">
-                                        <i class="ri-save-3-line align-middle me-1"></i>
-                                        Salvar pagamento
+                                        <i class="ri-save-line align-middle me-1" aria-hidden="true"></i>
+                                        {% if payment %}Salvar alterações{% else %}Registrar pagamento{% endif %}
                                     </button>
+                                    <a href="{% url 'tenants:payments-list' %}" class="btn btn-ghost-secondary">Cancelar</a>
                                 </div>
                             </form>
                         </div>
@@ -158,35 +94,39 @@
     </div>
     {% include "partials/footer.html" %}
 </div>
+{% endblock content %}
+
+{% block extra_js %}
+{% if not payment %}
 <script>
-    const clientSelect = document.getElementById("id_schema_name");
-    if (clientSelect) {
+    // Ao escolher o cliente, sugere o valor mensal dele (sem sobrescrever o que foi digitado).
+    (function () {
+        var clientSelect = document.getElementById("{{ form.schema_name.id_for_label }}");
+        var amountInput = document.getElementById("{{ form.amount.id_for_label }}");
+        if (!clientSelect || !amountInput) {
+            return;
+        }
+        var edited = false;
+        amountInput.addEventListener("input", function () {
+            edited = true;
+        });
         clientSelect.addEventListener("change", function () {
-            const schemaName = this.value;
-            if (!schemaName) {
+            if (!this.value || (edited && amountInput.value)) {
                 return;
             }
-            const url = "{% url 'tenants:payments-create' %}";
-            const params = new URLSearchParams();
-            params.set("schema_name", schemaName);
-            fetch(url + "?" + params.toString(), {
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                }
+            var params = new URLSearchParams({ schema_name: this.value });
+            fetch("{% url 'tenants:payments-create' %}?" + params.toString(), {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
             })
-                .then(function (response) {
-                    return response.json();
-                })
+                .then(function (response) { return response.json(); })
                 .then(function (data) {
-                    if (data && typeof data.amount !== "undefined") {
-                        const amountInput = document.getElementById("id_amount");
-                        if (amountInput) {
-                            amountInput.value = data.amount;
-                        }
+                    if (data && data.amount) {
+                        amountInput.value = data.amount;
                     }
                 })
                 .catch(function () {});
         });
-    }
+    })();
 </script>
-{% endblock content %}
+{% endif %}
+{% endblock extra_js %}

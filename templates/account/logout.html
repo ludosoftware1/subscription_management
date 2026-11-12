@@ -1,31 +1,21 @@
 {% extends "account/base.html" %}
 {% load static %}
-{% load i18n %}
-{% block title %}{% trans "Sign Out" %}{% endblock title %}
-    
-{% block content %}
-                                <div class="p-lg-5 p-4 text-center">
-                                    <lord-icon
-                                        src="https://cdn.lordicon.com/hzomhqxz.json"
-                                        trigger="loop"
-                                        colors="primary:#405189,secondary:#08a88a"
-                                        style="width:180px;height:180px">
-                                    </lord-icon>
+{% block title %}Sair{% endblock title %}
 
-                                    <div class="mt-4">
-                                        <h5>{% trans "Sign Out" %}</h5>
-                                        <p class="text-muted">{% trans 'Are you sure you want to sign out?' %}</p>
-                                        <form method="post" action="{% url 'account_logout' %}">
-                                            {% csrf_token %}
-                                            {% if redirect_field_value %}
-                                            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
-                                            {% endif %}
-                                            <button type="submit" class="btn btn-success w-100">{% trans 'Sign Out' %}</button>
-                                        </form>
-                                    </div>
-                                    <div class="mt-4 text-center">
-                                        <p class="mb-0">Deseja voltar? <a href="javascript:history.back()" class="fw-semibold text-primary text-decoration-underline"> Voltar </a> </p>
-                                    </div>
-                                </div>
-                                <!-- end col -->
+{% block content %}
+<div class="p-lg-4 p-2 text-center">
+    <span class="confirm-icon bg-primary-subtle text-primary" aria-hidden="true"><i class="ri-logout-box-r-line"></i></span>
+
+    <h1 class="fs-20 mt-3 mb-1">Sair do painel?</h1>
+    <p class="text-muted">Você precisará informar e-mail e senha para entrar novamente.</p>
+
+    <form method="post" action="{% url 'account_logout' %}" class="mt-4">
+        {% csrf_token %}
+        {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+        {% endif %}
+        <button type="submit" class="btn btn-primary w-100">Sair</button>
+        <a href="{% url 'home' %}" class="btn btn-ghost-secondary w-100 mt-2">Cancelar e voltar ao painel</a>
+    </form>
+</div>
 {% endblock content %}

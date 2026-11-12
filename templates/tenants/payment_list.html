@@ -1,156 +1,131 @@
 {% extends "partials/base.html" %}
 {% load static %}
-{% block title %}Pagamentos de clientes{% endblock title %}
+{% block title %}Pagamentos{% endblock title %}
 
 {% block content %}
 <div class="main-content">
     <div class="page-content">
         <div class="container-fluid">
-            <div class="row mb-3 pb-1">
-                <div class="col-12">
-                    <div class="d-flex align-items-lg-center flex-lg-row flex-column">
-                        <div class="flex-grow-1">
-                            <h4 class="fs-16 mb-1">Pagamentos de clientes</h4>
-                            <p class="text-muted mb-0">
-                                Lista de todos os pagamentos registrados na base interna.
-                            </p>
-                        </div>
-                        <div class="mt-3 mt-lg-0 d-flex gap-2">
-                            <a href="{% url 'tenants:payments-create' %}" class="btn btn-primary">
-                                <i class="ri-add-circle-line align-middle me-1"></i> Novo pagamento
-                            </a>
-                            <a href="{% url 'tenants:list' %}" class="btn btn-outline-secondary">
-                                <i class="ri-arrow-left-line align-middle me-1"></i> Voltar para clientes
-                            </a>
-                        </div>
-                    </div>
+            <div class="page-header">
+                <div>
+                    <nav aria-label="Trilha de navegação">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Pagamentos</li>
+                        </ol>
+                    </nav>
+                    <h1 class="page-header-title">Pagamentos</h1>
+                    <p class="page-header-subtitle">Pagamentos recebidos dos clientes, com as notas fiscais anexadas.</p>
+                </div>
+                <div class="page-header-actions">
+                    <a href="{% url 'tenants:payments-create' %}{% if filter_schema_name %}?schema_name={{ filter_schema_name }}{% endif %}" class="btn btn-success">
+                        <i class="ri-add-line align-middle me-1" aria-hidden="true"></i> Registrar pagamento
+                    </a>
                 </div>
             </div>
 
-            {% if messages %}
-            <div class="row">
-                <div class="col-12">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
+            {% include "partials/messages.html" %}
 
-            <div class="row mb-3">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Filtrar pagamentos</h5>
+            <div class="card">
+                <div class="card-header">
+                    <form method="get" class="row g-2 align-items-end">
+                        <div class="col-md-4">
+                            <label for="filter_schema_name" class="form-label fs-13 mb-1">Cliente</label>
+                            <select class="form-select" id="filter_schema_name" name="schema_name" onchange="this.form.submit()">
+                                <option value="">Todos os clientes</option>
+                                {% for value, label in tenant_choices %}
+                                <option value="{{ value }}"{% if filter_schema_name == value %} selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
-                        <div class="card-body">
-                            <form method="get" class="row g-3">
-                                <div class="col-md-4">
-                                    <label for="filter_schema_name" class="form-label">Cliente</label>
-                                    <select class="form-select" id="filter_schema_name" name="schema_name">
-                                        <option value="">Todos</option>
-                                        {% for value, label in tenant_choices %}
-                                        <option value="{{ value }}"{% if filter_schema_name == value %} selected{% endif %}>{{ label }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="filter_start_date" class="form-label">Data inicial</label>
-                                    <input
-                                        type="date"
-                                        class="form-control"
-                                        id="filter_start_date"
-                                        name="start_date"
-                                        value="{{ filter_start_date|default_if_none:'' }}"
-                                    >
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="filter_end_date" class="form-label">Data final</label>
-                                    <input
-                                        type="date"
-                                        class="form-control"
-                                        id="filter_end_date"
-                                        name="end_date"
-                                        value="{{ filter_end_date|default_if_none:'' }}"
-                                    >
-                                </div>
-                                <div class="col-md-2 d-flex align-items-end">
-                                    <button type="submit" class="btn btn-primary w-100">
-                                        Aplicar filtros
-                                    </button>
-                                </div>
-                            </form>
+                        <div class="col-6 col-md-2">
+                            <label for="filter_start_date" class="form-label fs-13 mb-1">De</label>
+                            <input type="date" class="form-control" id="filter_start_date" name="start_date" value="{{ filter_start_date }}">
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Pagamentos registrados</h5>
+                        <div class="col-6 col-md-2">
+                            <label for="filter_end_date" class="form-label fs-13 mb-1">Até</label>
+                            <input type="date" class="form-control" id="filter_end_date" name="end_date" value="{{ filter_end_date }}">
                         </div>
-                        <div class="card-body">
-                            {% if payments %}
-                            <div class="table-responsive table-card">
-                                <table class="table table-hover table-centered align-middle table-nowrap mb-0">
-                                    <thead class="text-muted table-light">
-                                        <tr>
-                                            <th>Data</th>
-                                            <th>Identificador</th>
-                                            <th>Cliente</th>
-                                            <th>Valor</th>
-                                            <th>Status</th>
-                                            <th>Referência</th>
-                                            <th>Nota fiscal</th>
-                                            <th style="width: 80px;">Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for payment in payments %}
-                                        <tr>
-                                            <td>{{ payment.payment_date|date:"d/m/Y" }}</td>
-                                            <td>{{ payment.schema_name }}</td>
-                                            <td>{{ payment.client_name|default:"-" }}</td>
-                                            <td>{{ payment.amount }} {{ payment.currency }}</td>
-                                            <td>{{ payment.get_status_display }}</td>
-                                            <td>{{ payment.reference|default:"-" }}</td>
-                                            <td>
-                                                {% if payment.invoice_file %}
-                                                <a href="{{ payment.invoice_file.url }}" target="_blank" class="btn btn-sm btn-soft-secondary">
-                                                    <i class="ri-file-download-line align-middle"></i>
-                                                </a>
-                                                {% else %}
-                                                -
-                                                {% endif %}
-                                            </td>
-                                            <td class="d-flex gap-1">
-                                                <a href="{% url 'tenants:payments-edit' payment.id %}" class="btn btn-sm btn-soft-primary">
-                                                    <i class="ri-edit-line align-middle"></i>
-                                                </a>
-                                                <form method="post" action="{% url 'tenants:payments-delete' payment.id %}">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-sm btn-soft-danger" onclick="return confirm('Confirma a exclusão deste pagamento?');">
-                                                        <i class="ri-delete-bin-line align-middle"></i>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                            {% else %}
-                            <p class="text-muted mb-0">
-                                Nenhum pagamento registrado ainda.
-                            </p>
+                        <div class="col-md-auto d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Filtrar</button>
+                            {% if filter_schema_name or filter_start_date or filter_end_date %}
+                            <a href="{% url 'tenants:payments-list' %}" class="btn btn-ghost-secondary">Limpar filtros</a>
                             {% endif %}
                         </div>
+                        <div class="col-md text-md-end fs-13 text-muted" aria-live="polite">
+                            {{ payments|length }} pagamento{{ payments|length|pluralize }} ·
+                            total pago <strong class="text-body">R$ {{ paid_total|floatformat:"2g" }}</strong>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-body">
+                    {% if payments %}
+                    <div class="table-responsive table-card">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="text-muted table-light">
+                                <tr>
+                                    <th scope="col">Data</th>
+                                    <th scope="col">Cliente</th>
+                                    <th scope="col" class="num">Valor</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Referência</th>
+                                    <th scope="col" class="col-actions">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>
+                                    <td class="text-nowrap">{{ payment.payment_date|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'tenants:detail' payment.schema_name %}" class="fw-medium link-body-emphasis">{{ payment.client_name|default:payment.schema_name }}</a>
+                                        {% if payment.client_name %}<small class="text-muted d-block">{{ payment.schema_name }}</small>{% endif %}
+                                    </td>
+                                    <td class="num">R$ {{ payment.amount|floatformat:"2g" }}</td>
+                                    <td>{% include "tenants/_payment_status.html" with payment=payment %}</td>
+                                    <td>{{ payment.reference|default:"—" }}</td>
+                                    <td class="col-actions">
+                                        <div class="d-inline-flex gap-1">
+                                            {% if payment.invoice_file %}
+                                            <a href="{{ payment.invoice_file.url }}" target="_blank" rel="noopener" class="btn btn-sm btn-soft-secondary btn-icon" data-bs-toggle="tooltip" title="Abrir nota fiscal" aria-label="Abrir nota fiscal (nova aba)">
+                                                <i class="ri-file-text-line" aria-hidden="true"></i>
+                                            </a>
+                                            {% endif %}
+                                            <a href="{% url 'tenants:payments-edit' payment.id %}" class="btn btn-sm btn-soft-primary btn-icon" data-bs-toggle="tooltip" title="Editar" aria-label="Editar pagamento de {{ payment.client_name|default:payment.schema_name }}">
+                                                <i class="ri-edit-line" aria-hidden="true"></i>
+                                            </a>
+                                            <span data-bs-toggle="tooltip" title="Excluir">
+                                                <a href="{% url 'tenants:payments-delete' payment.id %}" class="btn btn-sm btn-soft-danger btn-icon" role="button"
+                                                    data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal"
+                                                    data-delete-message="O pagamento de R$ {{ payment.amount|floatformat:'2g' }} de {{ payment.client_name|default:payment.schema_name }} ({{ payment.payment_date|date:'d/m/Y' }}) será excluído. Esta ação não pode ser desfeita."
+                                                    data-delete-next="{{ request.get_full_path }}"
+                                                    aria-label="Excluir pagamento de {{ payment.client_name|default:payment.schema_name }}">
+                                                    <i class="ri-delete-bin-line" aria-hidden="true"></i>
+                                                </a>
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
+                    {% elif filter_schema_name or filter_start_date or filter_end_date %}
+                    <div class="empty-state">
+                        <i class="ri-search-line" aria-hidden="true"></i>
+                        <p class="empty-state-title">Nenhum pagamento encontrado</p>
+                        <p>Nenhum pagamento corresponde aos filtros aplicados.</p>
+                        <a href="{% url 'tenants:payments-list' %}" class="btn btn-soft-secondary btn-sm">Limpar filtros</a>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="ri-bank-card-line" aria-hidden="true"></i>
+                        <p class="empty-state-title">Nenhum pagamento registrado</p>
+                        <p>Registre os pagamentos recebidos para acompanhar a receita e guardar as notas fiscais.</p>
+                        <a href="{% url 'tenants:payments-create' %}" class="btn btn-success btn-sm">
+                            <i class="ri-add-line align-middle me-1" aria-hidden="true"></i> Registrar pagamento
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -1,0 +1,26 @@
+{% comment %}
+Mensagens do Django (messages) com o estilo do tema. A tag "error" do Django
+não existe no Bootstrap ("danger"), por isso o mapeamento abaixo.
+{% endcomment %}
+{% if messages %}
+<div class="app-messages">
+    {% for message in messages %}
+    {% if message.level_tag == "error" %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="ri-error-warning-line" aria-hidden="true"></i>
+    {% elif message.level_tag == "warning" %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="ri-alert-line" aria-hidden="true"></i>
+    {% elif message.level_tag == "success" %}
+    <div class="alert alert-success alert-dismissible fade show" role="status">
+        <i class="ri-checkbox-circle-line" aria-hidden="true"></i>
+    {% else %}
+    <div class="alert alert-info alert-dismissible fade show" role="status">
+        <i class="ri-information-line" aria-hidden="true"></i>
+    {% endif %}
+        <div>{{ message }}</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

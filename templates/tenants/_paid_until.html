@@ -1,0 +1,13 @@
+{% comment %}Vencimento de um cliente com o prazo relativo. Uso: {% include "tenants/_paid_until.html" with tenant=tenant %}{% endcomment %}
+{% if tenant.paid_until %}
+{{ tenant.paid_until|date:"d/m/Y" }}
+{% if tenant.days_left < 0 %}
+<small class="d-block text-danger">vencido há {{ tenant.days_left|cut:"-" }} dia{{ tenant.days_left|cut:"-"|pluralize }}</small>
+{% elif tenant.days_left == 0 %}
+<small class="d-block text-warning fw-medium">vence hoje</small>
+{% elif tenant.days_left <= 30 %}
+<small class="d-block text-muted">em {{ tenant.days_left }} dia{{ tenant.days_left|pluralize }}</small>
+{% endif %}
+{% else %}
+<span class="text-muted">Sem vencimento</span>
+{% endif %}

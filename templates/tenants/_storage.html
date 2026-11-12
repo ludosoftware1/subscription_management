@@ -1,0 +1,19 @@
+{% comment %}Uso de armazenamento de um cliente. Uso: {% include "tenants/_storage.html" with tenant=tenant %}{% endcomment %}
+{% if tenant.storage_gb %}
+<div class="storage-meter">
+    <div class="d-flex justify-content-between gap-2 fs-13">
+        <span>{{ tenant.storage_used_gb|default:"0" }} / {{ tenant.storage_gb }} GB</span>
+        {% if tenant.storage_used_percent is not None %}
+        <span class="{% if tenant.storage_used_percent >= 90 %}text-danger fw-medium{% else %}text-muted{% endif %}">{{ tenant.storage_used_percent|floatformat:0 }}%</span>
+        {% endif %}
+    </div>
+    {% if tenant.storage_used_percent is not None %}
+    <div class="progress progress-sm mt-1" role="progressbar" aria-label="Armazenamento usado"
+        aria-valuenow="{{ tenant.storage_used_percent|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar {% if tenant.storage_used_percent >= 90 %}bg-danger{% elif tenant.storage_used_percent >= 75 %}bg-warning{% else %}bg-success{% endif %}" style="width: {{ tenant.storage_used_percent|floatformat:0 }}%"></div>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+{{ tenant.storage_used_gb|default:"0" }} GB <span class="text-muted fs-12">(sem cota)</span>
+{% endif %}

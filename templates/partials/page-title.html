@@ -1,12 +1,16 @@
-<!-- start page title -->
-<div class="page-title-box d-sm-flex align-items-center justify-content-between w-100">
-    <h4 class="mb-sm-0">{{title}}</h4>
-
-    <div class="page-title-right flex-grow-1 w-100">
-        <ol class="breadcrumb m-0 w-100 justify-content-start">
-            <li class="breadcrumb-item"><a href="javascript: void(0);">{{pagetitle}}</a></li>
-            <li class="breadcrumb-item active">{{title}}</li>
-        </ol>
+{% comment %}
+Cabeçalho padrão de página: trilha (Início / seção / página) + título.
+Uso: {% include "partials/page-title.html" with pagetitle="Seção" title="Título" %}
+{% endcomment %}
+<div class="page-header">
+    <div>
+        <nav aria-label="Trilha de navegação">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+                {% if pagetitle %}<li class="breadcrumb-item">{{ pagetitle }}</li>{% endif %}
+                <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">{{ title }}</h1>
     </div>
 </div>
-<!-- end page title -->

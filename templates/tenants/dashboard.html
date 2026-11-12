@@ -1,197 +1,199 @@
 {% extends "partials/base.html" %}
 {% load static %}
-{% block title %}Painel de assinaturas{% endblock title %}
+{% block title %}Visão geral{% endblock title %}
 
 {% block content %}
 <div class="main-content">
     <div class="page-content">
         <div class="container-fluid">
-            <div class="row mb-3 pb-1">
-                <div class="col-12">
-                    <div class="d-flex align-items-lg-center flex-lg-row flex-column">
-                        <div class="flex-grow-1">
-                            <h4 class="fs-16 mb-1">Painel de assinaturas</h4>
-                            <p class="text-muted mb-0">Visão geral dos clientes (tenants) do SynDoc e dos pagamentos registrados.</p>
-                        </div>
-                        <div class="mt-3 mt-lg-0 d-flex gap-2">
-                            <a href="{% url 'tenants:list' %}" class="btn btn-soft-secondary">
-                                <i class="ri-group-line align-middle me-1"></i> Clientes
-                            </a>
-                            <a href="{% url 'tenants:payments-list' %}" class="btn btn-soft-secondary">
-                                <i class="ri-bank-card-line align-middle me-1"></i> Pagamentos
-                            </a>
-                            <a href="{% url 'tenants:create' %}" class="btn btn-success">
-                                <i class="ri-add-circle-line align-middle me-1"></i> Novo cliente
-                            </a>
-                        </div>
-                    </div>
+            <div class="page-header">
+                <div>
+                    <h1 class="page-header-title">Visão geral</h1>
+                    <p class="page-header-subtitle">Situação das assinaturas dos clientes do SynDoc e pagamentos registrados.</p>
+                </div>
+                <div class="page-header-actions">
+                    {% if api_ok %}
+                    <span class="badge badge-status bg-success-subtle text-success" data-bs-toggle="tooltip"
+                        title="{{ api_base_url }}{% if api_host_header %} (Host: {{ api_host_header }}){% endif %}">
+                        <i class="ri-checkbox-blank-circle-fill fs-10 align-middle me-1" aria-hidden="true"></i>SynDoc conectado
+                    </span>
+                    {% endif %}
+                    <a href="{% url 'tenants:create' %}" class="btn btn-success">
+                        <i class="ri-add-line align-middle me-1" aria-hidden="true"></i> Novo cliente
+                    </a>
                 </div>
             </div>
 
-            {% if messages %}
-            <div class="row">
-                <div class="col-12">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            {% if not api_ok %}
+            {# O erro da API já vem em api_message; consome as mensagens para não repeti-lo aqui nem na próxima página. #}
+            {% for message in messages %}{% endfor %}
+            <div class="alert alert-danger" role="alert">
+                <div class="d-flex align-items-start gap-2">
+                    <i class="ri-error-warning-line fs-18" aria-hidden="true"></i>
+                    <div>
+                        <strong>Sem comunicação com o SynDoc.</strong>
+                        Os números abaixo podem estar incompletos.
+                        {% if api_message %}<div class="mt-1">{{ api_message }}</div>{% endif %}
+                        <details class="mt-2">
+                            <summary>O que conferir</summary>
+                            <ul class="mb-0 mt-2 ps-3">
+                                <li>No <code>.env</code> deste painel: <code>SAAS_API_BASE_URL</code>, <code>SAAS_API_KEY</code> e <code>SAAS_API_HOST_HEADER</code>.</li>
+                                <li>No SynDoc: <code>SAAS_API_KEY</code>, <code>SAAS_API_HOSTS</code> e <code>ALLOWED_HOSTS</code>.</li>
+                                <li>O domínio administrativo cadastrado no SynDoc (<code>manage.py create_platform_domain</code>).</li>
+                            </ul>
+                        </details>
                     </div>
-                    {% endfor %}
                 </div>
             </div>
+            {% else %}
+            {% include "partials/messages.html" %}
             {% endif %}
 
+            <h2 class="visually-hidden">Clientes por situação</h2>
             <div class="row">
-                <div class="col-12">
-                    {% if api_ok %}
-                    <div class="alert alert-success border-0 d-flex align-items-center" role="alert">
-                        <i class="ri-checkbox-circle-line fs-18 me-2"></i>
-                        <div>SynDoc conectado: <strong>{{ api_base_url }}</strong>{% if api_host_header %} (Host: {{ api_host_header }}){% endif %}.</div>
-                    </div>
-                    {% else %}
-                    <div class="alert alert-danger border-0" role="alert">
-                        <div class="d-flex align-items-center">
-                            <i class="ri-error-warning-line fs-18 me-2"></i>
-                            <div><strong>Sem comunicação com o SynDoc.</strong> {{ api_message }}</div>
-                        </div>
-                        <small class="d-block mt-2">
-                            Confira no .env deste painel <code>SAAS_API_BASE_URL</code>, <code>SAAS_API_KEY</code> e <code>SAAS_API_HOST_HEADER</code>,
-                            e no SynDoc <code>SAAS_API_KEY</code>, <code>SAAS_API_HOSTS</code>, <code>ALLOWED_HOSTS</code> e o domínio administrativo
-                            (<code>manage.py create_platform_domain</code>).
-                        </small>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-animate">
-                        <div class="card-body">
-                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Clientes</p>
-                            <h4 class="fs-22 fw-semibold mb-1">{{ summary.total }}</h4>
-                            <span class="text-muted fs-12">{{ summary.no_due_date }} sem vencimento</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-animate">
-                        <div class="card-body">
-                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Ativos</p>
-                            <h4 class="fs-22 fw-semibold mb-1 text-success">{{ summary.active|add:summary.expiring }}</h4>
-                            <span class="text-muted fs-12">{{ summary.expiring }} vencem em até 7 dias</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-animate">
-                        <div class="card-body">
-                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Em teste</p>
-                            <h4 class="fs-22 fw-semibold mb-1 text-info">{{ summary.trial }}</h4>
-                            <span class="text-muted fs-12">período de avaliação</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-animate">
-                        <div class="card-body">
-                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Vencidos</p>
-                            <h4 class="fs-22 fw-semibold mb-1 text-danger">{{ summary.expired }}</h4>
-                            <span class="text-muted fs-12">acesso bloqueado no SynDoc</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-animate">
-                        <div class="card-body">
-                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Receita mensal prevista</p>
-                            <h4 class="fs-22 fw-semibold mb-1">R$ {{ summary.mrr|floatformat:2 }}</h4>
-                            <span class="text-muted fs-12">soma do valor mensal dos clientes não vencidos</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-animate">
-                        <div class="card-body">
-                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Pagamentos no mês</p>
-                            <h4 class="fs-22 fw-semibold mb-1">R$ {{ payments_month_total|floatformat:2 }}</h4>
-                            <span class="text-muted fs-12">{{ payments_month_count }} pagamento(s) com status "Pago"</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-animate">
-                        <div class="card-body">
-                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Armazenamento</p>
-                            <h4 class="fs-22 fw-semibold mb-1">{{ summary.storage_used_gb }} / {{ summary.storage_gb }} GB</h4>
-                            {% if summary.storage_percent is not None %}
-                            <div class="progress progress-sm mt-2">
-                                <div class="progress-bar {% if summary.storage_percent >= 90 %}bg-danger{% elif summary.storage_percent >= 75 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ summary.storage_percent }}%" aria-valuenow="{{ summary.storage_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card card-animate kpi-card">
+                        <div class="card-body d-flex align-items-start justify-content-between gap-3">
+                            <div>
+                                <a href="{% url 'tenants:list' %}" class="kpi-link stretched-link text-decoration-none">
+                                    <p class="kpi-label">Clientes</p>
+                                </a>
+                                <p class="kpi-value">{{ summary.total }}</p>
+                                <span class="kpi-hint">{{ summary.no_due_date }} sem vencimento</span>
                             </div>
-                            <span class="text-muted fs-12">{{ summary.storage_percent }}% do contratado</span>
+                            <span class="kpi-icon bg-primary-subtle text-primary" aria-hidden="true"><i class="ri-building-line"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card card-animate kpi-card">
+                        <div class="card-body d-flex align-items-start justify-content-between gap-3">
+                            <div>
+                                <a href="{% url 'tenants:list' %}?status=active" class="kpi-link stretched-link text-decoration-none">
+                                    <p class="kpi-label">Ativos</p>
+                                </a>
+                                <p class="kpi-value">{{ summary.active|add:summary.expiring }}</p>
+                                <span class="kpi-hint">{% if summary.expiring %}<span class="text-warning fw-medium">{{ summary.expiring }} vence{{ summary.expiring|pluralize:"m" }} em até 7 dias</span>{% else %}nenhum vence em até 7 dias{% endif %}</span>
+                            </div>
+                            <span class="kpi-icon bg-success-subtle text-success" aria-hidden="true"><i class="ri-checkbox-circle-line"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card card-animate kpi-card">
+                        <div class="card-body d-flex align-items-start justify-content-between gap-3">
+                            <div>
+                                <a href="{% url 'tenants:list' %}?status=trial" class="kpi-link stretched-link text-decoration-none">
+                                    <p class="kpi-label">Em teste</p>
+                                </a>
+                                <p class="kpi-value">{{ summary.trial }}</p>
+                                <span class="kpi-hint">em período de avaliação</span>
+                            </div>
+                            <span class="kpi-icon bg-info-subtle text-info" aria-hidden="true"><i class="ri-flask-line"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card card-animate kpi-card">
+                        <div class="card-body d-flex align-items-start justify-content-between gap-3">
+                            <div>
+                                <a href="{% url 'tenants:list' %}?status=expired" class="kpi-link stretched-link text-decoration-none">
+                                    <p class="kpi-label">Vencidos</p>
+                                </a>
+                                <p class="kpi-value{% if summary.expired %} text-danger{% endif %}">{{ summary.expired }}</p>
+                                <span class="kpi-hint">{% if summary.expired %}com acesso bloqueado no SynDoc{% else %}nenhum acesso bloqueado{% endif %}</span>
+                            </div>
+                            <span class="kpi-icon bg-danger-subtle text-danger" aria-hidden="true"><i class="ri-error-warning-line"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="visually-hidden">Receita e recursos contratados</h2>
+            <div class="row">
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card kpi-card">
+                        <div class="card-body">
+                            <p class="kpi-label">Receita mensal prevista</p>
+                            <p class="kpi-value">R$ {{ summary.mrr|floatformat:"2g" }}</p>
+                            <span class="kpi-hint">valor mensal dos clientes não vencidos</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card kpi-card">
+                        <div class="card-body">
+                            <p class="kpi-label">Recebido neste mês</p>
+                            <p class="kpi-value">R$ {{ payments_month_total|floatformat:"2g" }}</p>
+                            <span class="kpi-hint">{{ payments_month_count }} pagamento{{ payments_month_count|pluralize }} com status “Pago”</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card kpi-card">
+                        <div class="card-body">
+                            <p class="kpi-label">Armazenamento</p>
+                            <p class="kpi-value">{{ summary.storage_used_gb|floatformat:"-1" }} <span class="fs-14 fw-normal text-muted">de {{ summary.storage_gb }} GB</span></p>
+                            {% if summary.storage_percent is not None %}
+                            <div class="progress progress-sm mt-2 mb-1" role="progressbar" aria-label="Armazenamento usado"
+                                aria-valuenow="{{ summary.storage_percent|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar {% if summary.storage_percent >= 90 %}bg-danger{% elif summary.storage_percent >= 75 %}bg-warning{% else %}bg-success{% endif %}" style="width: {{ summary.storage_percent|floatformat:0 }}%"></div>
+                            </div>
+                            <span class="kpi-hint">{{ summary.storage_percent|floatformat:"-1" }}% do contratado</span>
                             {% else %}
-                            <span class="text-muted fs-12">nenhuma cota contratada</span>
+                            <span class="kpi-hint">nenhuma cota contratada</span>
                             {% endif %}
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-animate">
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card kpi-card">
                         <div class="card-body">
-                            <p class="text-uppercase fw-medium text-muted mb-2 fs-12">Licenças contratadas</p>
-                            <h4 class="fs-22 fw-semibold mb-1">{{ summary.manager_licenses }} <small class="text-muted fs-13">manager</small> / {{ summary.staff_licenses }} <small class="text-muted fs-13">staff</small></h4>
-                            <span class="text-muted fs-12">somatório de todos os clientes</span>
+                            <p class="kpi-label">Licenças contratadas</p>
+                            <p class="kpi-value">{{ summary.manager_licenses|add:summary.staff_licenses }}</p>
+                            <span class="kpi-hint">{{ summary.manager_licenses }} Manager · {{ summary.staff_licenses }} Staff</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="row">
-                <div class="col-lg-7">
+                <div class="col-xl-7">
                     <div class="card">
-                        <div class="card-header d-flex align-items-center">
-                            <h5 class="card-title mb-0 flex-grow-1">Atenção: vencidos e próximos do vencimento (30 dias)</h5>
-                            <a href="{% url 'tenants:list' %}?status=expired" class="link-secondary fs-12">ver todos</a>
+                        <div class="card-header d-flex align-items-center gap-2">
+                            <div class="flex-grow-1">
+                                <h2 class="card-title mb-0">Precisam de atenção</h2>
+                                <p class="text-muted fs-12 mb-0">Vencidos ou com vencimento nos próximos 30 dias</p>
+                            </div>
+                            <a href="{% url 'tenants:list' %}?status=expired" class="btn btn-sm btn-soft-secondary">Ver vencidos</a>
                         </div>
                         <div class="card-body">
                             {% if attention %}
                             <div class="table-responsive table-card">
-                                <table class="table table-hover table-centered align-middle table-nowrap mb-0">
+                                <table class="table table-hover align-middle mb-0">
                                     <thead class="text-muted table-light">
                                         <tr>
-                                            <th>Cliente</th>
-                                            <th>Situação</th>
-                                            <th>Pago até</th>
-                                            <th>Valor mensal</th>
-                                            <th></th>
+                                            <th scope="col">Cliente</th>
+                                            <th scope="col">Situação</th>
+                                            <th scope="col">Pago até</th>
+                                            <th scope="col" class="num">Valor mensal</th>
+                                            <th scope="col"><span class="visually-hidden">Ações</span></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for tenant in attention %}
                                         <tr>
                                             <td>
-                                                <span class="fw-medium">{{ tenant.client_name }}</span>
-                                                <small class="text-muted d-block">{{ tenant.schema_name }} · {{ tenant.primary_domain|default:"-" }}</small>
+                                                <a href="{% url 'tenants:detail' tenant.schema_name %}" class="fw-medium link-body-emphasis">{{ tenant.client_name }}</a>
+                                                <small class="text-muted d-block">{{ tenant.schema_name }}</small>
                                             </td>
                                             <td>
-                                                <span class="badge bg-{{ tenant.status_color }}-subtle text-{{ tenant.status_color }}">{{ tenant.status_label }}</span>
+                                                <span class="badge badge-status bg-{{ tenant.status_color }}-subtle text-{{ tenant.status_color }}">{{ tenant.status_label }}</span>
                                             </td>
-                                            <td>
-                                                {{ tenant.paid_until|date:"d/m/Y" }}
-                                                {% if tenant.days_left is not None %}
-                                                <small class="d-block {% if tenant.days_left < 0 %}text-danger{% else %}text-muted{% endif %}">
-                                                    {% if tenant.days_left < 0 %}há {{ tenant.days_left|cut:"-" }} dia(s){% elif tenant.days_left == 0 %}vence hoje{% else %}em {{ tenant.days_left }} dia(s){% endif %}
-                                                </small>
-                                                {% endif %}
-                                            </td>
-                                            <td>R$ {{ tenant.monthly_price|floatformat:2 }}</td>
-                                            <td class="text-end">
-                                                <a href="{% url 'tenants:update' tenant.schema_name %}" class="btn btn-sm btn-soft-primary" title="Renovar / editar">
-                                                    <i class="ri-edit-line align-middle"></i>
-                                                </a>
+                                            <td class="text-nowrap">{% include "tenants/_paid_until.html" with tenant=tenant %}</td>
+                                            <td class="num">R$ {{ tenant.monthly_price|floatformat:"2g" }}</td>
+                                            <td class="col-actions">
+                                                <a href="{% url 'tenants:update' tenant.schema_name %}" class="btn btn-sm btn-soft-primary">Renovar</a>
                                             </td>
                                         </tr>
                                         {% endfor %}
@@ -199,48 +201,55 @@
                                 </table>
                             </div>
                             {% else %}
-                            <p class="text-muted mb-0">Nenhum cliente vencido ou vencendo nos próximos 30 dias.</p>
+                            <div class="empty-state">
+                                <i class="ri-checkbox-circle-line" aria-hidden="true"></i>
+                                <p class="empty-state-title">Tudo em dia</p>
+                                <p>Nenhum cliente vencido ou com vencimento nos próximos 30 dias.</p>
+                            </div>
                             {% endif %}
                         </div>
                     </div>
                 </div>
 
-                <div class="col-lg-5">
+                <div class="col-xl-5">
                     <div class="card">
-                        <div class="card-header d-flex align-items-center">
-                            <h5 class="card-title mb-0 flex-grow-1">Últimos pagamentos</h5>
-                            <a href="{% url 'tenants:payments-list' %}" class="link-secondary fs-12">ver todos</a>
+                        <div class="card-header d-flex align-items-center gap-2">
+                            <h2 class="card-title mb-0 flex-grow-1">Últimos pagamentos</h2>
+                            <a href="{% url 'tenants:payments-list' %}" class="btn btn-sm btn-soft-secondary">Ver todos</a>
                         </div>
                         <div class="card-body">
                             {% if recent_payments %}
                             <div class="table-responsive table-card">
-                                <table class="table table-hover table-centered align-middle table-nowrap mb-0">
+                                <table class="table table-hover align-middle mb-0">
                                     <thead class="text-muted table-light">
                                         <tr>
-                                            <th>Data</th>
-                                            <th>Cliente</th>
-                                            <th>Valor</th>
-                                            <th>Status</th>
+                                            <th scope="col">Data</th>
+                                            <th scope="col">Cliente</th>
+                                            <th scope="col" class="num">Valor</th>
+                                            <th scope="col">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for payment in recent_payments %}
                                         <tr>
-                                            <td>{{ payment.payment_date|date:"d/m/Y" }}</td>
+                                            <td class="text-nowrap">{{ payment.payment_date|date:"d/m/Y" }}</td>
                                             <td>
-                                                <a href="{% url 'tenants:detail' payment.schema_name %}">{{ payment.client_name|default:payment.schema_name }}</a>
+                                                <a href="{% url 'tenants:detail' payment.schema_name %}" class="link-body-emphasis">{{ payment.client_name|default:payment.schema_name }}</a>
                                             </td>
-                                            <td>{{ payment.currency }} {{ payment.amount|floatformat:2 }}</td>
-                                            <td>
-                                                <span class="badge {% if payment.status == 'paid' %}bg-success-subtle text-success{% elif payment.status == 'pending' %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %}">{{ payment.get_status_display }}</span>
-                                            </td>
+                                            <td class="num">R$ {{ payment.amount|floatformat:"2g" }}</td>
+                                            <td>{% include "tenants/_payment_status.html" with payment=payment %}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
                             {% else %}
-                            <p class="text-muted mb-0">Nenhum pagamento registrado ainda.</p>
+                            <div class="empty-state">
+                                <i class="ri-bank-card-line" aria-hidden="true"></i>
+                                <p class="empty-state-title">Nenhum pagamento registrado</p>
+                                <p>Os pagamentos registrados aparecem aqui.</p>
+                                <a href="{% url 'tenants:payments-create' %}" class="btn btn-soft-primary btn-sm">Registrar pagamento</a>
+                            </div>
                             {% endif %}
                         </div>
                     </div>
